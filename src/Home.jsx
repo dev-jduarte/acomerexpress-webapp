@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, List, Avatar,Select, Input } from "antd";
+import { Button, List, Avatar, Select, Input } from "antd";
 import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
 import moment from "moment";
 import FastfoodIcon from "@mui/icons-material/Fastfood";
@@ -11,11 +11,11 @@ import ChildCareIcon from "@mui/icons-material/ChildCare";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import EmojiFoodBeverageIcon from "@mui/icons-material/EmojiFoodBeverage";
 import LunchDiningIcon from "@mui/icons-material/LunchDining";
-import SportsBarIcon from "@mui/icons-material/SportsBar"
-
+import SportsBarIcon from "@mui/icons-material/SportsBar";
 
 function App() {
   const { data: products } = useFirestoreCRUD("products");
+  const { data: users, createDocument: createClient } = useFirestoreCRUD("clients");
   const { createDocument } = useFirestoreCRUD("orders");
   const [status, setStatus] = useState(null);
   const [formattedProducts, setFormattedProducts] = useState();
@@ -23,22 +23,23 @@ function App() {
   const [client, setClient] = useState({
     name: "",
     phone: "",
+    dni: "",
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
 
   const categoryIcons = {
-    "BEBIDAS": <LocalDrinkIcon style={{fontSize: 24, marginTop: 5}} />,
-    "BEBIDAS ALC": <SportsBarIcon style={{fontSize: 24, marginTop: 5}} />,
-    "COMBOS": <LunchDiningIcon style={{fontSize: 24, marginTop: 5}} />,
-    "DESAYUNOS": <BreakfastDiningIcon style={{fontSize: 24, marginTop: 5}} />,
-    "ENS. PERSONALES": <BreakfastDiningIcon style={{fontSize: 24, marginTop: 5}} />,
-    "ENTRADA": <FastfoodIcon style={{fontSize: 24, marginTop: 5}} />,
-    "KIDS": <ChildCareIcon style={{fontSize: 24, marginTop: 5}} />,
-    "PLATO FUERTE": <RestaurantIcon style={{fontSize: 24, marginTop: 5}} />,
-    "POSTRE": <CakeIcon style={{fontSize: 24, marginTop: 5}} />,
-    "RACION": <FastfoodIcon style={{fontSize: 24, marginTop: 5}} />,
+    BEBIDAS: <LocalDrinkIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "BEBIDAS ALC": <SportsBarIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    COMBOS: <LunchDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    DESAYUNOS: <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "ENS. PERSONALES": <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    ENTRADA: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    KIDS: <ChildCareIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "PLATO FUERTE": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    POSTRE: <CakeIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    RACION: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
   };
 
   useEffect(() => {
@@ -80,7 +81,17 @@ function App() {
   }
 
   function closeOrder() {
-    createDocument({ name: client.name || "Sin nombre", products: data, total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0), date: moment().format(), status: "open" });
+    const existingClient = users.find((i) => i.dni == client.dni);
+    if (!existingClient) {
+      createClient(client);
+    }
+    createDocument({
+      name: client.name || "Sin nombre",
+      products: data,
+      total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0),
+      date: moment().format(),
+      status: "open",
+    });
   }
 
   const filteredByCategory = formattedProducts?.filter((product) => !selectedCategory || product.item.category === selectedCategory);
@@ -108,6 +119,13 @@ function App() {
       {status === "newOrder" && (
         <>
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+            <Input placeholder="Cédula" value={client.dni} onChange={(e) => {
+                setClient({ ...client, dni: e.target.value })
+                const existingUser = users.find(u => u.dni == e.target.value)
+                if (existingUser) {
+                    setClient(existingUser)
+                }
+            }} />
             <Input placeholder="Nombre del cliente" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} />
             <Input placeholder="Teléfono del cliente" value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} />
           </div>
@@ -142,14 +160,18 @@ function App() {
             renderItem={(item, index) => (
               <List.Item key={item.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 12 }}>
                 <List.Item.Meta
-                  avatar={<Avatar
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >{categoryIcons[item.category] || <FastfoodIcon style={{fontSize: 24}}/>}</Avatar>}
+                  avatar={
+                    <Avatar
+                      style={{
+                        backgroundColor: "#f0f0f0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {categoryIcons[item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
+                    </Avatar>
+                  }
                   title={item.name}
                   description={`Precio unitario: $${item.price}`}
                 />
@@ -173,7 +195,7 @@ function App() {
             <Button
               style={{ width: "100%", marginTop: "30px" }}
               type="primary"
-              disabled={!data.length}
+              disabled={!data.length || client?.name?.trim() == ""}
               onClick={() => {
                 closeOrder();
                 setStatus(null);

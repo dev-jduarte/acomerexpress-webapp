@@ -4,7 +4,7 @@ import { Button, List, Input, Select, Divider, Modal } from "antd";
 import moment from "moment";
 
 function Orders() {
-  const { data: orders, updateDocument } = useFirestoreCRUD("orders");
+  const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders");
   const { data: products } = useFirestoreCRUD("products");
   const { createDocument } = useFirestoreCRUD("closedOrders"); // Asumimos que las órdenes cerradas van a esta colección
   const [editingOrder, setEditingOrder] = useState(null);
@@ -17,6 +17,15 @@ function Orders() {
 
   const filteredProductOptions = productOptions.filter((option) => (selectedCategory ? option.item.category === selectedCategory : true));
 
+  const paymentMethods = [
+    {label: "PAGO MOVIL", value: "PAGOMOVIL"},
+    {label: "EFECTIVO $", value: "EFECTIVODOLAR"},
+    {label: "EFECTIVO BS", value: "EFECTIVOBS"},
+    {label: "ZELLE", value: "ZELLE"},
+    {label: "BINANCE", value: "BINANCE"},
+    {label: "PUNTO DE VENTA", value: "PUNTODEVENTA"}
+]
+  
   useEffect(() => {
     if (products) {
       const options = products
@@ -29,6 +38,10 @@ function Orders() {
       setProductOptions(options);
     }
   }, [products]);
+
+  useEffect(() => {
+    refetch({status: "open"})
+  }, [])
 
   const handleProductQtyChange = (index, delta) => {
     const newProducts = [...editingOrder.products];
@@ -54,11 +67,13 @@ function Orders() {
 
   const handleUpdateOrder = async () => {
     const updatedTotal = editingOrder.products.reduce((acc, item) => acc + item.price * item.qty, 0);
+    debugger
     await updateDocument(editingOrder.id, {
       name: editingOrder.name,
-      phone: editingOrder.phone,
+      phone: editingOrder.phone || "",
       products: editingOrder.products,
       total: updatedTotal,
+      status: "closed"
     });
     setEditingOrder(null);
   };
@@ -70,16 +85,16 @@ function Orders() {
 
   const closeOrder = async () => {
     if (!orderToClose) return;
-    const { name = "Sin nombre", products } = orderToClose;
-    const total = products.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0);
-
-    await createDocument({
-      name,
-      products,
-      total,
-      date: moment().format(),
-    });
-
+  
+    const { id, name = "Sin nombre", products } = orderToClose;
+  
+    // 2. Actualizar el status de la orden original
+    await updateDocument(id, { status: "closed" });
+  
+    // 3. Refrescar las órdenes abiertas
+    await refetch({ status: "open" });
+  
+    // 4. Resetear estados del modal
     setIsClosingModalVisible(false);
     setOrderToClose(null);
   };
@@ -134,16 +149,16 @@ function Orders() {
             renderItem={(product, index) => (
               <List.Item
                 actions={[
-                  <Button onClick={() => handleProductQtyChange(index, 1)}>+</Button>,
                   <Button onClick={() => handleProductQtyChange(index, -1)} disabled={product.qty <= 1}>
                     -
                   </Button>,
+                  <Button onClick={() => handleProductQtyChange(index, 1)}>+</Button>,
                   <Button danger onClick={() => handleRemoveProduct(index)}>
                     Eliminar
                   </Button>,
                 ]}
               >
-                <List.Item.Meta title={product.name} description={`Cantidad: ${product.qty} | Precio: $${product.price}`} />
+                <List.Item.Meta title={product.name} description={`Cantidad: ${product.qty} | Precio: $${product.price * product.qty}`} />
               </List.Item>
             )}
           />
@@ -203,6 +218,7 @@ function Orders() {
           <>
             <p><strong>Cliente:</strong> {orderToClose.name || "Sin nombre"}</p>
             <p><strong>Total:</strong> ${orderToClose.total}</p>
+            <Select options={paymentMethods} />
           </>
         )}
       </Modal>

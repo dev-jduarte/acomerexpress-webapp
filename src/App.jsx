@@ -8,7 +8,7 @@ function App() {
     <div style={{ padding: 16, maxWidth: 600, margin: "0 auto" }}>
       <nav style={{ display: "flex", gap: 16, marginBottom: 24 }}>
         <Link to="/">Inicio</Link>
-        <Link to="/ordenes">Órdenes</Link>
+        <Link to="/ordenes">Órdenes abiertas</Link>
       </nav>
 
       <Routes>

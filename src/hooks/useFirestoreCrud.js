@@ -6,7 +6,9 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  getFirestore
+  getFirestore,
+  query,
+  where
 } from 'firebase/firestore';
 import { app } from '../firebase';
 
@@ -19,10 +21,21 @@ export const useFirestoreCRUD = (collectionName) => {
 
   const colRef = collection(db, collectionName);
 
-  const fetchData = async () => {
+  const fetchData = async (filters = {}) => {
     setLoading(true);
     try {
-      const snapshot = await getDocs(colRef);
+      let q = colRef;
+
+      // Aplica filtros si los hay
+      const filterKeys = Object.keys(filters);
+      if (filterKeys.length > 0) {
+        const conditions = filterKeys.map(key =>
+          where(key, '==', filters[key])
+        );
+        q = query(colRef, ...conditions);
+      }
+
+      const snapshot = await getDocs(q);
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setData(items);
     } catch (err) {
@@ -44,6 +57,7 @@ export const useFirestoreCRUD = (collectionName) => {
 
   const updateDocument = async (id, updatedData) => {
     try {
+      debugger
       const docRef = doc(db, collectionName, id);
       await updateDoc(docRef, updatedData);
       setData(prev => prev.map(item => item.id === id ? { ...item, ...updatedData } : item));
@@ -63,7 +77,7 @@ export const useFirestoreCRUD = (collectionName) => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(); // sin filtros por defecto
   }, []);
 
   return {
@@ -73,6 +87,6 @@ export const useFirestoreCRUD = (collectionName) => {
     createDocument,
     updateDocument,
     deleteDocument,
-    refetch: fetchData,
+    refetch: fetchData, // puedes pasarle filtros si lo necesitas
   };
 };
