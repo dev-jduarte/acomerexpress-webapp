@@ -1,20 +1,10 @@
-import { useState, useEffect } from 'react';
-import {
-  collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  doc,
-  getFirestore,
-  query,
-  where
-} from 'firebase/firestore';
-import { app } from '../firebase';
+import { useState, useEffect } from "react";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, getFirestore, query, where } from "firebase/firestore";
+import { app } from "../firebase";
 
 const db = getFirestore(app);
 
-export const useFirestoreCRUD = (collectionName) => {
+export const useFirestoreCRUD = (collectionName, firstFetch = true) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,14 +19,12 @@ export const useFirestoreCRUD = (collectionName) => {
       // Aplica filtros si los hay
       const filterKeys = Object.keys(filters);
       if (filterKeys.length > 0) {
-        const conditions = filterKeys.map(key =>
-          where(key, '==', filters[key])
-        );
+        const conditions = filterKeys.map((key) => where(key, "==", filters[key]));
         q = query(colRef, ...conditions);
       }
 
       const snapshot = await getDocs(q);
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setData(items);
     } catch (err) {
       setError(err.message);
@@ -48,7 +36,7 @@ export const useFirestoreCRUD = (collectionName) => {
   const createDocument = async (newData) => {
     try {
       const docRef = await addDoc(colRef, newData);
-      setData(prev => [...prev, { id: docRef.id, ...newData }]);
+      setData((prev) => [...prev, { id: docRef.id, ...newData }]);
       return docRef.id;
     } catch (err) {
       setError(err.message);
@@ -57,10 +45,9 @@ export const useFirestoreCRUD = (collectionName) => {
 
   const updateDocument = async (id, updatedData) => {
     try {
-      debugger
       const docRef = doc(db, collectionName, id);
       await updateDoc(docRef, updatedData);
-      setData(prev => prev.map(item => item.id === id ? { ...item, ...updatedData } : item));
+      setData((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedData } : item)));
     } catch (err) {
       setError(err.message);
     }
@@ -70,14 +57,16 @@ export const useFirestoreCRUD = (collectionName) => {
     try {
       const docRef = doc(db, collectionName, id);
       await deleteDoc(docRef);
-      setData(prev => prev.filter(item => item.id !== id));
+      setData((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       setError(err.message);
     }
   };
 
   useEffect(() => {
-    fetchData(); // sin filtros por defecto
+    if (firstFetch) {
+      fetchData(); // sin filtros por defecto
+    }
   }, []);
 
   return {

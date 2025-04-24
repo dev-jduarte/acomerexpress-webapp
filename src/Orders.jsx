@@ -4,7 +4,7 @@ import { Button, List, Input, Select, Divider, Modal, InputNumber, Space } from 
 import moment from "moment";
 
 function Orders() {
-  const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders");
+  const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
   const { data: products } = useFirestoreCRUD("products");
   const { createDocument } = useFirestoreCRUD("closedOrders");
 
