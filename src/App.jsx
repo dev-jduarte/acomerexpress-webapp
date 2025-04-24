@@ -2,6 +2,17 @@ import { useEffect, useState } from "react";
 import { Button, List, Avatar, Row, Col, Select, Input } from "antd";
 import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
 import moment from "moment";
+import FastfoodIcon from "@mui/icons-material/Fastfood";
+import LiquorIcon from "@mui/icons-material/Liquor";
+import LocalDrinkIcon from "@mui/icons-material/LocalDrink";
+import BreakfastDiningIcon from "@mui/icons-material/BreakfastDining";
+import CakeIcon from "@mui/icons-material/Cake";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import EmojiFoodBeverageIcon from "@mui/icons-material/EmojiFoodBeverage";
+import LunchDiningIcon from "@mui/icons-material/LunchDining";
+import SportsBarIcon from "@mui/icons-material/SportsBar"
+
 
 function App() {
   const { data: products } = useFirestoreCRUD("products");
@@ -16,6 +27,19 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
+
+  const categoryIcons = {
+    "BEBIDAS": <LocalDrinkIcon style={{fontSize: 24, marginTop: 5}} />,
+    "BEBIDAS ALC": <SportsBarIcon style={{fontSize: 24, marginTop: 5}} />,
+    "COMBOS": <LunchDiningIcon style={{fontSize: 24, marginTop: 5}} />,
+    "DESAYUNOS": <BreakfastDiningIcon style={{fontSize: 24, marginTop: 5}} />,
+    "ENS. PERSONALES": <BreakfastDiningIcon style={{fontSize: 24, marginTop: 5}} />,
+    "ENTRADA": <FastfoodIcon style={{fontSize: 24, marginTop: 5}} />,
+    "KIDS": <ChildCareIcon style={{fontSize: 24, marginTop: 5}} />,
+    "PLATO FUERTE": <RestaurantIcon style={{fontSize: 24, marginTop: 5}} />,
+    "POSTRE": <CakeIcon style={{fontSize: 24, marginTop: 5}} />,
+    "RACION": <FastfoodIcon style={{fontSize: 24, marginTop: 5}} />,
+  };
 
   useEffect(() => {
     formatProducts();
@@ -118,7 +142,14 @@ function App() {
             renderItem={(item, index) => (
               <List.Item key={item.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 12 }}>
                 <List.Item.Meta
-                  avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+                  avatar={<Avatar
+                    style={{
+                      backgroundColor: "#f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >{categoryIcons[item.category] || <FastfoodIcon style={{fontSize: 24}}/>}</Avatar>}
                   title={item.name}
                   description={`Precio unitario: $${item.price}`}
                 />
