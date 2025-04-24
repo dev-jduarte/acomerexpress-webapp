@@ -1,31 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
-import { Button, List, Input, Select, Divider, Modal } from "antd";
+import { Button, List, Input, Select, Divider, Modal, InputNumber, Space } from "antd";
 import moment from "moment";
 
 function Orders() {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders");
   const { data: products } = useFirestoreCRUD("products");
-  const { createDocument } = useFirestoreCRUD("closedOrders"); // Asumimos que las órdenes cerradas van a esta colección
+  const { createDocument } = useFirestoreCRUD("closedOrders");
+
   const [editingOrder, setEditingOrder] = useState(null);
   const [productOptions, setProductOptions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [orderToClose, setOrderToClose] = useState(null);
   const [isClosingModalVisible, setIsClosingModalVisible] = useState(false);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([]);
+  const [paymentAmounts, setPaymentAmounts] = useState({});
 
   const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
 
+  const paymentMethods = [
+    { label: "PAGO MOVIL", value: "PAGOMOVIL" },
+    { label: "EFECTIVO $", value: "EFECTIVODOLAR" },
+    { label: "EFECTIVO BS", value: "EFECTIVOBS" },
+    { label: "ZELLE", value: "ZELLE" },
+    { label: "BINANCE", value: "BINANCE" },
+    { label: "PUNTO DE VENTA", value: "PUNTODEVENTA" },
+  ];
+
   const filteredProductOptions = productOptions.filter((option) => (selectedCategory ? option.item.category === selectedCategory : true));
 
-  const paymentMethods = [
-    {label: "PAGO MOVIL", value: "PAGOMOVIL"},
-    {label: "EFECTIVO $", value: "EFECTIVODOLAR"},
-    {label: "EFECTIVO BS", value: "EFECTIVOBS"},
-    {label: "ZELLE", value: "ZELLE"},
-    {label: "BINANCE", value: "BINANCE"},
-    {label: "PUNTO DE VENTA", value: "PUNTODEVENTA"}
-]
-  
   useEffect(() => {
     if (products) {
       const options = products
@@ -40,8 +43,8 @@ function Orders() {
   }, [products]);
 
   useEffect(() => {
-    refetch({status: "open"})
-  }, [])
+    refetch({ status: "open" });
+  }, []);
 
   const handleProductQtyChange = (index, delta) => {
     const newProducts = [...editingOrder.products];
@@ -65,17 +68,42 @@ function Orders() {
     });
   };
 
+  const handlePaymentMethodChange = (values) => {
+    setSelectedPaymentMethods(values);
+    setPaymentAmounts((prev) => {
+      const updated = {};
+      values.forEach((method) => {
+        updated[method] = prev[method] || 0;
+      });
+      return updated;
+    });
+  };
+
+  const handlePaymentAmountChange = (method, value) => {
+    setPaymentAmounts((prev) => ({
+      ...prev,
+      [method]: value,
+    }));
+  };
+
   const handleUpdateOrder = async () => {
     const updatedTotal = editingOrder.products.reduce((acc, item) => acc + item.price * item.qty, 0);
-    debugger
+
     await updateDocument(editingOrder.id, {
       name: editingOrder.name,
       phone: editingOrder.phone || "",
       products: editingOrder.products,
       total: updatedTotal,
-      status: "closed"
+      status: "closed",
+      payments: selectedPaymentMethods.map((method) => ({
+        method,
+        amount: paymentAmounts[method] || 0,
+      })),
     });
+
     setEditingOrder(null);
+    setSelectedPaymentMethods([]);
+    setPaymentAmounts({});
   };
 
   const showCloseOrderModal = (order) => {
@@ -85,16 +113,18 @@ function Orders() {
 
   const closeOrder = async () => {
     if (!orderToClose) return;
-  
-    const { id, name = "Sin nombre", products } = orderToClose;
-  
-    // 2. Actualizar el status de la orden original
-    await updateDocument(id, { status: "closed" });
-  
-    // 3. Refrescar las órdenes abiertas
+
+    const { id } = orderToClose;
+    await updateDocument(id, {
+      status: "closed",
+      payments: selectedPaymentMethods.map((method) => ({
+        method,
+        amount: paymentAmounts[method] || 0,
+      })),
+      date: moment().format(),
+    });
     await refetch({ status: "open" });
-  
-    // 4. Resetear estados del modal
+
     setIsClosingModalVisible(false);
     setOrderToClose(null);
   };
@@ -137,9 +167,7 @@ function Orders() {
             onSelect={handleAddProduct}
             value={undefined}
             showSearch
-            filterOption={(input, option) =>
-              option.label.toLowerCase().includes(input.toLowerCase())
-            }
+            filterOption={(input, option) => option.label.toLowerCase().includes(input.toLowerCase())}
           />
 
           <Divider orientation="left">Productos actuales</Divider>
@@ -201,7 +229,6 @@ function Orders() {
         </>
       )}
 
-      {/* Modal de confirmación para cerrar orden */}
       <Modal
         title="¿Cerrar orden?"
         open={isClosingModalVisible}
@@ -212,13 +239,41 @@ function Orders() {
         }}
         okText="Confirmar"
         cancelText="Cancelar"
+        //okButtonProps={{disabled: Object.values(paymentAmounts).reduce((acc, curr) => {acc + curr || 0}, 0)}}
       >
         <p>¿Estás seguro de que deseas cerrar esta orden?</p>
         {orderToClose && (
           <>
-            <p><strong>Cliente:</strong> {orderToClose.name || "Sin nombre"}</p>
-            <p><strong>Total:</strong> ${orderToClose.total}</p>
-            <Select options={paymentMethods} />
+            <Divider orientation="left">Métodos de pago</Divider>
+            <Select
+              mode="multiple"
+              allowClear
+              style={{ width: "100%" }}
+              placeholder="Selecciona métodos de pago"
+              onChange={handlePaymentMethodChange}
+              options={paymentMethods}
+              value={selectedPaymentMethods}
+            />
+            <div style={{ marginTop: 12 }}>
+              {selectedPaymentMethods.map((method) => (
+                <div key={method} style={{ marginBottom: 8 }}>
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    addonBefore={paymentMethods.find((m) => m.value === method)?.label}
+                    placeholder="Monto"
+                    min={0}
+                    value={paymentAmounts[method]}
+                    onChange={(value) => handlePaymentAmountChange(method, value)}
+                  />
+                </div>
+              ))}
+            </div>
+            <p>
+              <strong>Cliente:</strong> {orderToClose.name || "Sin nombre"}
+            </p>
+            <p>
+              <strong>Total:</strong> ${orderToClose.total}
+            </p>
           </>
         )}
       </Modal>
