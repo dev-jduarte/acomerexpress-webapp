@@ -13,7 +13,9 @@ function App() {
     name: "",
     phone: "",
   });
-  const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"]
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
 
   useEffect(() => {
     formatProducts();
@@ -57,6 +59,8 @@ function App() {
     createDocument({ name: client.name || "Sin nombre", products: data, total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0), date: moment().format() });
   }
 
+  const filteredByCategory = formattedProducts?.filter((product) => !selectedCategory || product.item.category === selectedCategory);
+
   return (
     <div style={{ padding: 16, maxWidth: 500, margin: "0 auto" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
@@ -64,7 +68,7 @@ function App() {
           Abrir orden
         </Button>
         <Button
-          disabled={!data.length}
+          disabled={!status}
           danger
           onClick={() => {
             setStatus(null);
@@ -87,9 +91,19 @@ function App() {
           {/* Selector de productos */}
           <div style={{ marginBottom: 24 }}>
             <h3>Seleccionar producto:</h3>
+            <div style={{ marginBottom: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <Button type={!selectedCategory ? "primary" : "default"} onClick={() => setSelectedCategory(null)}>
+                Todas
+              </Button>
+              {categories.map((cat) => (
+                <Button key={cat} type={selectedCategory === cat ? "primary" : "default"} onClick={() => setSelectedCategory(cat)}>
+                  {cat}
+                </Button>
+              ))}
+            </div>
             <Select
               style={{ width: "100%" }}
-              options={formattedProducts}
+              options={filteredByCategory}
               onSelect={(value, item) => {
                 setData([...data, { qty: 1, ...item.item }]);
                 filterProducts(item.item.name);
@@ -124,9 +138,9 @@ function App() {
               </List.Item>
             )}
           />
-          <div style={{width: "100%"}}>
+          <div style={{ width: "100%" }}>
             <Button
-              style={{width: '100%', marginTop: "30px"}}
+              style={{ width: "100%", marginTop: "30px" }}
               type="primary"
               disabled={!data.length}
               onClick={() => {
