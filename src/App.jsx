@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, List, Avatar, Row, Col, Select, Input } from "antd";
 import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
+import moment from "moment";
 
 function App() {
   const { data: products } = useFirestoreCRUD("products");
@@ -12,15 +13,19 @@ function App() {
     name: "",
     phone: "",
   });
+  const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"]
 
   useEffect(() => {
     formatProducts();
   }, [products]);
 
   function formatProducts() {
-    const newData = products.map((product) => {
-      return { value: product.id, label: product.name, item: product };
+    let newData = products.map((product) => {
+      if (product.price && product.price > 0) {
+        return { value: product.id, label: product.name, item: product };
+      }
     });
+    newData = newData.filter((item) => item).sort((a, b) => a.label.localeCompare(b.label));
     setFormattedProducts(newData);
   }
 
@@ -36,9 +41,8 @@ function App() {
     setData(newData);
   }
 
-  function filterProducts() {
-    let newData = [...formattedProducts];
-    newData = newData.filter((item) => data.includes((i) => i.name == item.name));
+  function filterProducts(productNameToRemove) {
+    const newData = formattedProducts.filter((item) => item.item.name !== productNameToRemove);
     setFormattedProducts(newData);
   }
 
@@ -50,113 +54,81 @@ function App() {
   }
 
   function closeOrder() {
-    createDocument({ name: "Prueba 2", products: data, total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0) });
+    createDocument({ name: client.name || "Sin nombre", products: data, total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0), date: moment().format() });
   }
 
   return (
-    <>
-      
-      <Row style={{ height: "60vh" }}>
-        <Col
-          span={12}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRight: "1px solid #f0f0f0",
+    <div style={{ padding: 16, maxWidth: 500, margin: "0 auto" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+        <Button disabled={status} type="primary" onClick={() => setStatus("newOrder")}>
+          Abrir orden
+        </Button>
+        <Button
+          disabled={!data.length}
+          danger
+          onClick={() => {
+            setStatus(null);
+            setData([]);
+            formatProducts();
           }}
         >
-          {status && status == "newOrder" && (
-            <div style={{ width: "80%" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 300 }}>
-        <div style={{display: "flex", justifyContent: "space-between"}}>
-          <label>Cliente: </label>
-          <Input
-            style={{ width: "200px" }}
-            onChange={(e) => {
-              const newData = { ...client };
-              newData.name = e.target.value;
-              setClient(newData);
-              console.log(e.target.value);
-            }}
-          />
-        </div>
-        <div style={{display: "flex", justifyContent: "space-between"}}>
-          <label>Teléfono: </label>
-          <Input
-            style={{ width: "200px" }}
-            onChange={(e) => {
-              const newData = { ...client };
-              newData.phone = e.target.value;
-              setClient(newData);
-              console.log(e.target.value);
-            }}
-          />
-        </div>
+          Cancelar orden
+        </Button>
       </div>
-              <List
-                itemLayout="horizontal"
-                header={
-                  <div>
-                    <h2>Productos</h2>
-                    <Select
-                      style={{ minWidth: "200px" }}
-                      options={formattedProducts}
-                      onSelect={(value, item) => {
-                        const newData = [...data];
-                        newData.push({ qty: 1, ...item.item });
-                        setData(newData);
-                        filterProducts();
-                      }}
-                    />
-                  </div>
-                }
-                dataSource={data}
-                renderItem={(item, index) => (
-                  <List.Item
-                    actions={[
-                      <Button disabled={item.qty == 0} onClick={() => onDecrement(index)}>
-                        -
-                      </Button>,
-                      <Button>{item.qty}</Button>,
-                      <Button
-                        onClick={() => {
-                          onIncrement(index);
-                        }}
-                      >
-                        +
-                      </Button>,
-                      <div>
-                        <label>Total: </label>
-                        <label>${item.qty * item.price}</label>
-                      </div>,
-                      <Button
-                        onClick={() => {
-                          deleteItem(index);
-                        }}
-                      >
-                        Eliminar
-                      </Button>,
-                    ]}
-                  >
-                    <List.Item.Meta
-                      avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
-                      title={<a href="https://ant.design">{item.name}</a>}
-                      description={`Precio: $${item.price}`}
-                    />
-                  </List.Item>
-                )}
-              />
-            </div>
-          )}
-        </Col>
-        <Col span={12}>
-          <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", alignItems: "center", gap: 8 }}>
-            <Button disabled={status} type="primary" onClick={() => setStatus("newOrder")}>
-              Abrir orden
-            </Button>
+
+      {/* Formulario de cliente */}
+      {status === "newOrder" && (
+        <>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+            <Input placeholder="Nombre del cliente" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} />
+            <Input placeholder="Teléfono del cliente" value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} />
+          </div>
+
+          {/* Selector de productos */}
+          <div style={{ marginBottom: 24 }}>
+            <h3>Seleccionar producto:</h3>
+            <Select
+              style={{ width: "100%" }}
+              options={formattedProducts}
+              onSelect={(value, item) => {
+                setData([...data, { qty: 1, ...item.item }]);
+                filterProducts(item.item.name);
+              }}
+            />
+          </div>
+
+          {/* Lista de productos seleccionados */}
+          <List
+            itemLayout="vertical"
+            dataSource={data}
+            renderItem={(item, index) => (
+              <List.Item key={item.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 12 }}>
+                <List.Item.Meta
+                  avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+                  title={item.name}
+                  description={`Precio unitario: $${item.price}`}
+                />
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <Button disabled={item.qty <= 1} onClick={() => onDecrement(index)}>
+                    -
+                  </Button>
+                  <span>{item.qty}</span>
+                  <Button onClick={() => onIncrement(index)}>+</Button>
+                  <Button danger onClick={() => deleteItem(index)}>
+                    Eliminar
+                  </Button>
+                </div>
+                <div style={{ marginTop: 8 }}>
+                  <strong>Total: ${item.qty * item.price}</strong>
+                </div>
+              </List.Item>
+            )}
+          />
+          <div style={{width: "100%"}}>
             <Button
-              disabled={data && data.length == 0}
+              style={{width: '100%', marginTop: "30px"}}
+              type="primary"
+              disabled={!data.length}
               onClick={() => {
                 closeOrder();
                 setStatus(null);
@@ -167,9 +139,9 @@ function App() {
               Finalizar orden
             </Button>
           </div>
-        </Col>
-      </Row>
-    </>
+        </>
+      )}
+    </div>
   );
 }
 
