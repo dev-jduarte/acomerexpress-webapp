@@ -97,7 +97,7 @@ function App({ user }) {
       name: client.name || "Sin nombre",
       products: data,
       total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0),
-      date: moment().toDate(),
+      date: moment().format(),
       status: "open",
       location: selectedZone
     });

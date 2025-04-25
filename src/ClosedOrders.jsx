@@ -12,10 +12,10 @@ function ClosedOrders() {
 
   const [dateRange, setDateRange] = useState(null); // [moment, moment]
 
-  useEffect(() => {
-    // Consulta inicial
-    refetch({ status: "closed" });
-  }, []);
+  // useEffect(() => {
+  //   // Consulta inicial
+  //   refetch({ status: "closed" });
+  // }, []);
 
   const handleDateRangeChange = (dates) => {
     setDateRange(dates);
