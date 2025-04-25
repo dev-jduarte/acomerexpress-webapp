@@ -15,14 +15,24 @@ export const useFirestoreCRUD = (collectionName, firstFetch = true) => {
     setLoading(true);
     try {
       let q = colRef;
-
-      // Aplica filtros si los hay
-      const filterKeys = Object.keys(filters);
-      if (filterKeys.length > 0) {
-        const conditions = filterKeys.map((key) => where(key, "==", filters[key]));
-        q = query(colRef, ...conditions);
+  
+      const conditions = [];
+      // Manejar filtro por fechas (start y end)
+      if (filters?.date?.start) {
+        conditions.push(where("date", ">=", filters?.date?.start));
       }
-
+      if (filters?.date?.end) {
+        conditions.push(where("date", "<=", filters?.date?.end));
+      }
+      // Otros filtros (como status)
+      Object.keys(filters).forEach((key) => {
+        if (key != "date" && key !== "start" && key !== "end") {
+          conditions.push(where(key, "==", filters[key]));
+        }
+      });
+  
+      q = query(colRef, ...conditions);
+  
       const snapshot = await getDocs(q);
       const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setData(items);

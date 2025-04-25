@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, List, Avatar, Select, Input } from "antd";
+import { Button, List, Avatar, Select, Input, Divider } from "antd";
 import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
 import moment from "moment";
 import FastfoodIcon from "@mui/icons-material/Fastfood";
@@ -13,7 +13,7 @@ import EmojiFoodBeverageIcon from "@mui/icons-material/EmojiFoodBeverage";
 import LunchDiningIcon from "@mui/icons-material/LunchDining";
 import SportsBarIcon from "@mui/icons-material/SportsBar";
 
-function App() {
+function App({ user }) {
   const { data: products } = useFirestoreCRUD("products");
   const { data: users, createDocument: createClient } = useFirestoreCRUD("clients");
   const { createDocument } = useFirestoreCRUD("orders");
@@ -26,8 +26,16 @@ function App() {
     dni: "",
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedZone, setSelectedZone] = useState(null)
 
   const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
+
+  const zonesOptions = [
+    { label: "Zona A", value: "ZONEA" },
+    { label: "Zona B", value: "ZONEB" },
+    { label: "Zona C", value: "ZONEC" },
+    { label: "Terraza", value: "TERRAZA" },
+  ];
 
   const categoryIcons = {
     BEBIDAS: <LocalDrinkIcon style={{ fontSize: 24, marginTop: 5 }} />,
@@ -89,8 +97,9 @@ function App() {
       name: client.name || "Sin nombre",
       products: data,
       total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0),
-      date: moment().format(),
+      date: moment().toDate(),
       status: "open",
+      location: selectedZone
     });
   }
 
@@ -99,7 +108,7 @@ function App() {
   return (
     <div style={{ padding: 16, maxWidth: 500, margin: "0 auto" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-        <Button disabled={status} type="primary" onClick={() => setStatus("newOrder")}>
+        <Button disabled={status || !user} type="primary" onClick={() => setStatus("newOrder")}>
           Nueva orden
         </Button>
         <Button
@@ -119,15 +128,26 @@ function App() {
       {status === "newOrder" && (
         <>
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-            <Input placeholder="Cédula" value={client.dni} onChange={(e) => {
-                setClient({ ...client, dni: e.target.value })
-                const existingUser = users.find(u => u.dni == e.target.value)
+            <Input
+              placeholder="Cédula"
+              value={client.dni}
+              onChange={(e) => {
+                setClient({ ...client, dni: e.target.value });
+                const existingUser = users.find((u) => u.dni == e.target.value);
                 if (existingUser) {
-                    setClient(existingUser)
+                  setClient(existingUser);
                 }
-            }} />
+              }}
+            />
             <Input placeholder="Nombre del cliente" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} />
             <Input placeholder="Teléfono del cliente" value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} />
+            <Divider orientation="left">Ubicación</Divider>
+            <Select
+              value={selectedZone}
+              style={{ width: "100%", marginBottom: 16 }}
+              options={zonesOptions}
+              onChange={(value) => setSelectedZone(value)}
+            />
           </div>
 
           {/* Selector de productos */}

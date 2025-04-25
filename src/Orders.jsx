@@ -3,10 +3,9 @@ import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
 import { Button, List, Input, Select, Divider, Modal, InputNumber, Space } from "antd";
 import moment from "moment";
 
-function Orders() {
+function Orders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
   const { data: products } = useFirestoreCRUD("products");
-  const { createDocument } = useFirestoreCRUD("closedOrders");
 
   const [editingOrder, setEditingOrder] = useState(null);
   const [productOptions, setProductOptions] = useState([]);
@@ -45,6 +44,13 @@ function Orders() {
   useEffect(() => {
     refetch({ status: "open" });
   }, []);
+
+  const zonesOptions = [
+    { label: "Zona A", value: "ZONEA" },
+    { label: "Zona B", value: "ZONEB" },
+    { label: "Zona C", value: "ZONEC" },
+    { label: "Terraza", value: "TERRAZA" },
+  ];
 
   const handleProductQtyChange = (index, delta) => {
     const newProducts = [...editingOrder.products];
@@ -95,6 +101,7 @@ function Orders() {
       products: editingOrder.products,
       total: updatedTotal,
       status: "closed",
+      location: editingOrder.location || "", // <- nuevo campo
       payments: selectedPaymentMethods.map((method) => ({
         method,
         amount: paymentAmounts[method] || 0,
@@ -122,6 +129,7 @@ function Orders() {
         amount: paymentAmounts[method] || 0,
       })),
       date: moment().format(),
+      seller: user,
     });
     await refetch({ status: "open" });
 
@@ -146,6 +154,14 @@ function Orders() {
             value={editingOrder.phone}
             onChange={(e) => setEditingOrder({ ...editingOrder, phone: e.target.value })}
             style={{ marginBottom: 16 }}
+          />
+
+          <Divider orientation="left">Ubicación</Divider>
+          <Select
+            value={editingOrder?.location}
+            style={{ width: "100%", marginBottom: 16 }}
+            options={zonesOptions}
+            onChange={(value) => setEditingOrder({ ...editingOrder, location: value })}
           />
 
           <Divider orientation="left">Filtrar por categoría</Divider>
@@ -205,24 +221,23 @@ function Orders() {
             itemLayout="vertical"
             dataSource={orders}
             renderItem={(item) => (
-              <List.Item
-                key={item.id}
-                actions={[
-                  <Button type="primary" onClick={() => setEditingOrder(item)}>
-                    Editar Orden
-                  </Button>,
-                  <Button danger onClick={() => showCloseOrderModal(item)}>
-                    Cerrar orden
-                  </Button>,
-                ]}
-              >
+              <List.Item key={item.id}>
                 <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
+                {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
                 <Divider style={{ margin: "8px 0" }} />
                 {item.products.map((product, idx) => (
                   <div key={idx} style={{ marginBottom: 4 }}>
                     <strong>{product.name}</strong> - ${product.price} x {product.qty}
                   </div>
                 ))}
+                <div style={{ display: "flex", justifyContent: "end", width: "100%", gap: 8 }}>
+                  <Button type="primary" onClick={() => setEditingOrder(item)}>
+                    Editar Orden
+                  </Button>
+                  <Button danger onClick={() => showCloseOrderModal(item)}>
+                    Cerrar orden
+                  </Button>
+                </div>
               </List.Item>
             )}
           />
@@ -239,7 +254,9 @@ function Orders() {
         }}
         okText="Confirmar"
         cancelText="Cancelar"
-        //okButtonProps={{disabled: Object.values(paymentAmounts).reduce((acc, curr) => {acc + curr || 0}, 0)}}
+        okButtonProps={{
+          disabled: !orderToClose || Object.values(paymentAmounts).reduce((acc, curr) => acc + Number(curr || 0), 0) !== orderToClose.total,
+        }}
       >
         <p>¿Estás seguro de que deseas cerrar esta orden?</p>
         {orderToClose && (
