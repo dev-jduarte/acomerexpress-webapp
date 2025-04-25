@@ -12,11 +12,6 @@ function ClosedOrders() {
 
   const [dateRange, setDateRange] = useState(null); // [moment, moment]
 
-  // useEffect(() => {
-  //   // Consulta inicial
-  //   refetch({ status: "closed" });
-  // }, []);
-
   const handleDateRangeChange = (dates) => {
     setDateRange(dates);
     if (dates && dates.length === 2) {
@@ -37,12 +32,7 @@ function ClosedOrders() {
       <h2>Órdenes cerradas</h2>
 
       <Space direction="vertical" style={{ marginBottom: 16, width: "100%" }}>
-        <RangePicker
-          showTime
-          format="DD/MM/YYYY HH:mm"
-          onChange={handleDateRangeChange}
-          style={{ width: "100%" }}
-        />
+        <RangePicker showTime format="DD/MM/YYYY HH:mm" onChange={handleDateRangeChange} style={{ width: "100%" }} placeholder={["Fecha de inicio", "Fecha de fin"]} />
       </Space>
 
       <List
@@ -55,9 +45,7 @@ function ClosedOrders() {
               description={
                 <div>
                   <div>Total de la orden: ${item.total}</div>
-                  <div>
-                    Fecha: {item?.date ? moment(item.date).format("DD/MM/YYYY HH:mm") : "--"}
-                  </div>
+                  <div>Fecha: {item?.date ? moment(item.date).format("DD/MM/YYYY HH:mm") : "--"}</div>
                 </div>
               }
             />
