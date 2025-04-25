@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
+import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { Button, List, Input, Select, Divider, Modal, InputNumber, Space } from "antd";
 import moment from "moment";
+import { categories } from "../utils/categories";
 
 function Orders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
@@ -14,8 +15,6 @@ function Orders({ user }) {
   const [isClosingModalVisible, setIsClosingModalVisible] = useState(false);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([]);
   const [paymentAmounts, setPaymentAmounts] = useState({});
-
-  const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
 
   const paymentMethods = [
     { label: "PAGO MOVIL", value: "PAGOMOVIL" },

@@ -1,6 +1,18 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Button, Modal, Form, Input, InputNumber, Select, List, Avatar, Space, message, Row, Col } from "antd";
-import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
+import React, { useState, useMemo } from "react";
+import {
+  Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  List,
+  Avatar,
+  Space,
+  Row,
+  Col,
+} from "antd";
+import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import {
   LocalDrink as LocalDrinkIcon,
   SportsBar as SportsBarIcon,
@@ -11,32 +23,37 @@ import {
   Restaurant as RestaurantIcon,
   Cake as CakeIcon,
 } from "@mui/icons-material";
-
-const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
+import { categories } from "../utils/categories";
+import { message, App as AntdApp } from 'antd';
 
 const categoryIcons = {
   BEBIDAS: <LocalDrinkIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "BEBIDAS ALC": <SportsBarIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  COMBOS: <LunchDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  DESAYUNOS: <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "ENS. PERSONALES": <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  ENTRADA: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  KIDS: <ChildCareIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "PLATO FUERTE": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  POSTRE: <CakeIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  RACION: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  "LICORES": <SportsBarIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  "HAMBURGUESAS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  "MENU KIDS": <ChildCareIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  "ARABIC FOOD": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  "SMASH CRUJIENTE": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  POSTRES: <CakeIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  RACIONES: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  "HOT DOGS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+  "EXTRAS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
 };
 
-const PASSWORD = import.meta.env.VITE_CRUD_PASSWORD;
+const PASSWORD = "123456";
 
 const Products = () => {
   const { data: products, createDocument, updateDocument, deleteDocument, refetch } = useFirestoreCRUD("products");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [form] = Form.useForm();
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+
+  const [passwordModal, setPasswordModal] = useState({ visible: false, onConfirm: null });
+  const [authPassword, setAuthPassword] = useState("");
+  const [messageApi, contextHolder] = message.useMessage();
 
   const filteredProducts = useMemo(() => {
     return products?.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()) && (categoryFilter ? p.category === categoryFilter : true)) || [];
@@ -48,72 +65,56 @@ const Products = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-    Modal.confirm({
-      title: "Autenticación requerida",
-      content: <Input.Password placeholder="Introduce la clave" onPressEnter={(e) => handleConfirm(values, e.target.value)} id="confirm-password" />,
-      onOk: () =>
-        new Promise((resolve, reject) => {
-          const passwordInput = document.getElementById("confirm-password");
-          const value = passwordInput?.value;
-          if (value === PASSWORD) {
-            handleConfirm(values, value).then(resolve).catch(reject);
-          } else {
-            message.error("Clave incorrecta");
-            reject();
-          }
-        }),
-    });
+  const showPasswordModal = (onConfirm) => {
+    setAuthPassword("");
+    setPasswordModal({ visible: true, onConfirm });
   };
 
-  const handleConfirm = async (values) => {
-    try {
-      if (editingProduct) {
-        await updateDocument(editingProduct.id, values);
-        message.success("Producto actualizado");
-      } else {
-        await createDocument(values);
-        message.success("Producto creado");
-      }
-      refetch();
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      message.error("Error al guardar el producto");
+  const handlePasswordConfirm = () => {
+    if (authPassword === PASSWORD) {
+      passwordModal.onConfirm();
+      setPasswordModal({ visible: false, onConfirm: null });
+    } else {
+      messageApi.error("Clave incorrecta");
     }
+  };
+
+  const handleSubmit = async () => {
+    const values = await form.validateFields();
+    showPasswordModal(async () => {
+      try {
+        if (editingProduct) {
+          await updateDocument(editingProduct.id, values);
+          messageApi.success("Producto actualizado");
+        } else {
+          await createDocument(values);
+          messageApi.success("Producto creado");
+        }
+        refetch();
+        setIsModalOpen(false);
+      } catch (err) {
+        console.error(err);
+        messageApi.error("Error al guardar el producto");
+      }
+    });
   };
 
   const handleDelete = (product) => {
-    Modal.confirm({
-      title: `¿Eliminar ${product.name}?`,
-      content: <Input.Password placeholder="Introduce la clave" onPressEnter={(e) => confirmDelete(product, e.target.value)} id="delete-password" />,
-      onOk: () =>
-        new Promise((resolve, reject) => {
-          const value = document.getElementById("delete-password")?.value;
-          if (value === PASSWORD) {
-            confirmDelete(product, value).then(resolve).catch(reject);
-          } else {
-            message.error("Clave incorrecta");
-            reject();
-          }
-        }),
+    showPasswordModal(async () => {
+      try {
+        await deleteDocument(product.id);
+        refetch();
+        messageApi.success("Producto eliminado");
+      } catch (err) {
+        console.error(err);
+        messageApi.error("Error al eliminar producto");
+      }
     });
-  };
-
-  const confirmDelete = async (product) => {
-    try {
-      await deleteDocument(product.id);
-      refetch();
-      message.success("Producto eliminado");
-    } catch (err) {
-      console.error(err);
-      message.error("Error al eliminar producto");
-    }
   };
 
   return (
     <div style={{ padding: 24, maxWidth: 800, margin: "0 auto" }}>
+      {contextHolder}
       <Space direction="vertical" style={{ width: "100%" }} size="middle">
         <Button type="primary" onClick={() => showModal()}>
           Agregar producto
@@ -121,11 +122,17 @@ const Products = () => {
 
         <Space style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
           <Row>
-            <Col style={{paddingTop: 8}} sm={24} md={12}>
+            <Col style={{ paddingTop: 8 }} sm={24} md={12}>
               <Input.Search placeholder="Buscar por nombre" onChange={(e) => setSearch(e.target.value)} style={{ width: "89%" }} allowClear />
             </Col>
-            <Col style={{paddingTop: 8}} sm={24} md={12}>
-              <Select allowClear style={{ width: 200 }} placeholder="Filtrar por categoría" onChange={(value) => setCategoryFilter(value)} value={categoryFilter || undefined}>
+            <Col style={{ paddingTop: 8 }} sm={24} md={12}>
+              <Select
+                allowClear
+                style={{ width: 200 }}
+                placeholder="Filtrar por categoría"
+                onChange={(value) => setCategoryFilter(value)}
+                value={categoryFilter || undefined}
+              >
                 {categories.map((cat) => (
                   <Select.Option key={cat} value={cat}>
                     <Space>
@@ -162,6 +169,7 @@ const Products = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      color: "#1677ff"
                     }}
                   >
                     {categoryIcons[item.category] || <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />}
@@ -175,6 +183,7 @@ const Products = () => {
         />
       </Space>
 
+      {/* Modal para agregar/editar */}
       <Modal
         title={editingProduct ? "Editar producto" : "Nuevo producto"}
         open={isModalOpen}
@@ -202,6 +211,23 @@ const Products = () => {
             </Select>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Modal de autenticación */}
+      <Modal
+        open={passwordModal.visible}
+        onOk={handlePasswordConfirm}
+        onCancel={() => setPasswordModal({ visible: false, onConfirm: null })}
+        okText="Confirmar"
+        cancelText="Cancelar"
+        title="Autenticación requerida"
+      >
+        <Input.Password
+          placeholder="Introduce la clave"
+          value={authPassword}
+          onChange={(e) => setAuthPassword(e.target.value)}
+          onPressEnter={handlePasswordConfirm}
+        />
       </Modal>
     </div>
   );

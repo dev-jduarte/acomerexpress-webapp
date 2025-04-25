@@ -4,7 +4,7 @@ import { app } from "../firebase.js";
 const db = getFirestore(app);
 
 (async () => {
-  const productsData = [
+  const productsDataDeprecated = [
     { name: "PAPAS FRITAS", category: "RACION", price: 4 },
     { name: "PAPAS TRUFADAS", category: "RACION", price: 0 },
     { name: "TEQUEÑOS+ SALSA", category: "RACION", price: 5 },
@@ -44,6 +44,33 @@ const db = getFirestore(app);
     { name: "NUGGETS+ PAPAS+ REG.", category: "KIDS", price: 5 },
     { name: "2 HAMBURG.+ 2 REFR.", category: "COMBO", price: 14 },
   ];
+
+  const productsData = [
+    {name: "CRISPY BREAK", category: "HAMBURGUESAS", price: 8},
+    {name: "CHICKEN DRIVE",category: "HAMBURGUESAS", price: 8},
+    {name: "REBEL BACON",category: "HAMBURGUESAS", price: 8},
+    {name: "POLLO FULL SET", category: "SMASH CRUJIENTE", price: 8},
+    {name: "FAMILY PACK", category: "SMASH CRUJIENTE", price: 20},
+    {name: "TENDERS DE POLLO + ENSALADA CESAR + PAPAS", category: "SMASH CRUJIENTE", price: 8},
+    {name: "HAMBURGESAS", category: "MENU KIDS", price: 5},
+    {name: "TENDERS DE POLLO", category: "MENU KIDS", price: 5},
+    {name: "NUGGETS", category: "MENU KIDS", price: 5},
+    {name: "PLATO MIXTO 1", category: "ARABIC FOOD", price: 10},
+    {name: "PLATO MIXTO 2", category: "ARABIC FOOD", price: 10},
+    {name: "PLATO MIXTO 3", category: "ARABIC FOOD", price: 10},
+    {name: "SALCHICHA ALEMANA", category: "HOT DOGS", price: 8},
+    {name: "SALCHICHA POLACA", category: "HOT DOGS", price: 8},
+    {name: "CHISTORRA", category: "HOT DOGS", price: 8},
+    {name: "TRADICIONAL", category: "HOT DOGS", price: 8},
+    {name: "PAPAS FRITAS", category: "RACIONES", price: 4},
+    {name: "TEQUEÑOS + SALSAS", category: "RACIONES", price: 5},
+    {name: "YUCA FRITA", category: "RACIONES", price: 4},
+    {name: "BROWNIE", category: "POSTRES", price: 3.5},
+    {name: "PIE DE LIMÓN", category: "POSTRES", price: 3.5},
+    {name: "PIE DE PARCHITA",category: "POSTRES", price: 3.5},
+    {name: "TRES LECHES",category: "POSTRES", price: 3.5},
+    {name: "TOSTONES", category: "POSTRES", price: 2}
+  ]
 
   await Promise.all(
     productsData.map(async (product) => {

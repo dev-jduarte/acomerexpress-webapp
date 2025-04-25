@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { Button, List, Avatar, Select, Input, Divider } from "antd";
-import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
+import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import moment from "moment";
 import FastfoodIcon from "@mui/icons-material/Fastfood";
-import LiquorIcon from "@mui/icons-material/Liquor";
 import LocalDrinkIcon from "@mui/icons-material/LocalDrink";
 import BreakfastDiningIcon from "@mui/icons-material/BreakfastDining";
 import CakeIcon from "@mui/icons-material/Cake";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
-import EmojiFoodBeverageIcon from "@mui/icons-material/EmojiFoodBeverage";
 import LunchDiningIcon from "@mui/icons-material/LunchDining";
 import SportsBarIcon from "@mui/icons-material/SportsBar";
+import { categories } from "../utils/categories";
 
 function App({ user }) {
   const { data: products } = useFirestoreCRUD("products");
@@ -26,9 +25,7 @@ function App({ user }) {
     dni: "",
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedZone, setSelectedZone] = useState(null)
-
-  const categories = ["BEBIDAS", "BEBIDAS ALC", "COMBOS", "DESAYUNOS", "ENS. PERSONALES", "ENTRADA", "KIDS", "PLATO FUERTE", "POSTRE", "RACION"];
+  const [selectedZone, setSelectedZone] = useState(null);
 
   const zonesOptions = [
     { label: "Zona A", value: "ZONEA" },
@@ -39,15 +36,15 @@ function App({ user }) {
 
   const categoryIcons = {
     BEBIDAS: <LocalDrinkIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    "BEBIDAS ALC": <SportsBarIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    COMBOS: <LunchDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    DESAYUNOS: <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    "ENS. PERSONALES": <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    ENTRADA: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    KIDS: <ChildCareIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    "PLATO FUERTE": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    POSTRE: <CakeIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    RACION: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    LICORES: <SportsBarIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    HAMBURGUESAS: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "MENU KIDS": <ChildCareIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "ARABIC FOOD": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "SMASH CRUJIENTE": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    POSTRES: <CakeIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    RACIONES: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "HOT DOGS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "EXTRAS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
   };
 
   useEffect(() => {
@@ -99,7 +96,7 @@ function App({ user }) {
       total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0),
       date: moment().format(),
       status: "open",
-      location: selectedZone
+      location: selectedZone,
     });
   }
 
@@ -142,12 +139,7 @@ function App({ user }) {
             <Input placeholder="Nombre del cliente" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} />
             <Input placeholder="Teléfono del cliente" value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} />
             <Divider orientation="left">Ubicación</Divider>
-            <Select
-              value={selectedZone}
-              style={{ width: "100%", marginBottom: 16 }}
-              options={zonesOptions}
-              onChange={(value) => setSelectedZone(value)}
-            />
+            <Select value={selectedZone} style={{ width: "100%", marginBottom: 16 }} options={zonesOptions} onChange={(value) => setSelectedZone(value)} />
           </div>
 
           {/* Selector de productos */}

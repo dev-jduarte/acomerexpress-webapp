@@ -1,11 +1,12 @@
 import { Routes, Route, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Home from "./Home";
 import Orders from "./Orders";
 import ClosedOrders from "./ClosedOrders";
 import Products from "./Products"
-import { Select, Modal, Input, message, Typography } from "antd";
-import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
+import { Select, Modal, Input, Typography } from "antd";
+import { message, App as AntdApp } from 'antd';
+import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import moment from "moment";
 
 const { Title } = Typography;
@@ -16,6 +17,8 @@ function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const { createDocument: saveChangeTurn } = useFirestoreCRUD("changeTurn", false);
+  const [messageApi, contextHolder] = message.useMessage();
+
 
   const userOptions = [
     { label: "Usuario 001", value: "USUARIO001" },
@@ -32,12 +35,12 @@ function App() {
   const handleModalOk = () => {
     if (passwordInput === userPasswords) {
       setSelectedUser(pendingUser);
-      message.success(`Sesión iniciada como ${pendingUser}`);
+      messageApi.success(`Sesión iniciada como ${pendingUser}`);
       setIsModalVisible(false);
       setPasswordInput("");
       saveChangeTurn({ date: moment().format(), pendingUser });
     } else {
-      message.error("Clave incorrecta");
+      messageApi.error("Clave incorrecta");
     }
   };
 
@@ -55,6 +58,7 @@ function App() {
         alignItems: "flex-start",
       }}
     >
+      {contextHolder}
       <div
         style={{
           background: "white",

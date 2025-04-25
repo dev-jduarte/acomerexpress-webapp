@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useFirestoreCRUD } from "./hooks/useFirestoreCrud";
+import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { List, Divider, Collapse, DatePicker, Space } from "antd";
 import moment from "moment";
 
