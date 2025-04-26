@@ -25,20 +25,32 @@ function App() {
     { label: "Usuario 002", value: "USUARIO002" },
   ];
 
-  const userPasswords = "123456";
+  const userPasswords = {
+    USUARIO001: import.meta.env.VITE_USER001_PASSWORD,
+    USUARIO002: import.meta.env.VITE_USER002_PASSWORD
+  };
 
   const handleUserSelect = (value) => {
     setPendingUser(value);
     setIsModalVisible(true);
   };
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('selectedUser');
+    if (storedUser) {
+      setSelectedUser(storedUser);
+    }
+  }, []);
+
   const handleModalOk = () => {
-    if (passwordInput === userPasswords) {
+    if (passwordInput === userPasswords[pendingUser]) {
       setSelectedUser(pendingUser);
       messageApi.success(`Sesión iniciada como ${pendingUser}`);
       setIsModalVisible(false);
       setPasswordInput("");
       saveChangeTurn({ date: moment().format(), pendingUser });
+      localStorage.setItem('selectedUser', pendingUser);
+
     } else {
       messageApi.error("Clave incorrecta");
     }

@@ -1,17 +1,5 @@
 import React, { useState, useMemo } from "react";
-import {
-  Button,
-  Modal,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  List,
-  Avatar,
-  Space,
-  Row,
-  Col,
-} from "antd";
+import { Button, Modal, Form, Input, InputNumber, Select, List, Avatar, Space, Row, Col } from "antd";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import {
   LocalDrink as LocalDrinkIcon,
@@ -24,22 +12,10 @@ import {
   Cake as CakeIcon,
 } from "@mui/icons-material";
 import { categories } from "../utils/categories";
-import { message, App as AntdApp } from 'antd';
+import { message, App as AntdApp } from "antd";
+import { categoryIcons } from "../utils/categoryIcons";
 
-const categoryIcons = {
-  BEBIDAS: <LocalDrinkIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "LICORES": <SportsBarIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "HAMBURGUESAS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "MENU KIDS": <ChildCareIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "ARABIC FOOD": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "SMASH CRUJIENTE": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  POSTRES: <CakeIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  RACIONES: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "HOT DOGS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-  "EXTRAS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-};
-
-const PASSWORD = "123456";
+const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
 const Products = () => {
   const { data: products, createDocument, updateDocument, deleteDocument, refetch } = useFirestoreCRUD("products");
@@ -126,13 +102,7 @@ const Products = () => {
               <Input.Search placeholder="Buscar por nombre" onChange={(e) => setSearch(e.target.value)} style={{ width: "89%" }} allowClear />
             </Col>
             <Col style={{ paddingTop: 8 }} sm={24} md={12}>
-              <Select
-                allowClear
-                style={{ width: 200 }}
-                placeholder="Filtrar por categoría"
-                onChange={(value) => setCategoryFilter(value)}
-                value={categoryFilter || undefined}
-              >
+              <Select allowClear style={{ width: 200 }} placeholder="Filtrar por categoría" onChange={(value) => setCategoryFilter(value)} value={categoryFilter || undefined}>
                 {categories.map((cat) => (
                   <Select.Option key={cat} value={cat}>
                     <Space>
@@ -169,7 +139,7 @@ const Products = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#1677ff"
+                      color: "#1677ff",
                     }}
                   >
                     {categoryIcons[item.category] || <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />}
@@ -222,12 +192,7 @@ const Products = () => {
         cancelText="Cancelar"
         title="Autenticación requerida"
       >
-        <Input.Password
-          placeholder="Introduce la clave"
-          value={authPassword}
-          onChange={(e) => setAuthPassword(e.target.value)}
-          onPressEnter={handlePasswordConfirm}
-        />
+        <Input.Password placeholder="Introduce la clave" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} onPressEnter={handlePasswordConfirm} />
       </Modal>
     </div>
   );

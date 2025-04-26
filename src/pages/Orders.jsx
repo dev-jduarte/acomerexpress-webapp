@@ -3,6 +3,9 @@ import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { Button, List, Input, Select, Divider, Modal, InputNumber, Space } from "antd";
 import moment from "moment";
 import { categories } from "../utils/categories";
+import { categoryIcons } from "../utils/categoryIcons";
+import getCategoryColor from "../utils/getColorsByCategories";
+import TextArea from "antd/es/input/TextArea";
 
 function Orders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
@@ -25,7 +28,11 @@ function Orders({ user }) {
     { label: "PUNTO DE VENTA", value: "PUNTODEVENTA" },
   ];
 
-  const filteredProductOptions = productOptions.filter((option) => (selectedCategory ? option.item.category === selectedCategory : true));
+  const filteredProductOptions = productOptions.filter((option) => {
+    const matchesCategory = selectedCategory ? option.item.category === selectedCategory : true;
+    const notAlreadyAdded = !editingOrder?.products.some((p) => p.id === option.item.id);
+    return matchesCategory && notAlreadyAdded;
+  });
 
   useEffect(() => {
     if (products) {
@@ -64,6 +71,7 @@ function Orders({ user }) {
   };
 
   const handleAddProduct = (value, option) => {
+    debugger;
     const exists = editingOrder.products.find((p) => p.id === option.item.id);
     if (exists) return;
 
@@ -73,14 +81,16 @@ function Orders({ user }) {
     });
   };
 
-  const handlePaymentMethodChange = (values) => {
-    setSelectedPaymentMethods(values);
-    setPaymentAmounts((prev) => {
-      const updated = {};
-      values.forEach((method) => {
-        updated[method] = prev[method] || 0;
-      });
-      return updated;
+  const handleTogglePaymentMethod = (method) => {
+    setSelectedPaymentMethods((prevSelected) => {
+      if (prevSelected.includes(method)) {
+        const updated = prevSelected.filter((m) => m !== method);
+        const { [method]: removed, ...rest } = paymentAmounts;
+        setPaymentAmounts(rest);
+        return updated;
+      } else {
+        return [...prevSelected, method];
+      }
     });
   };
 
@@ -105,6 +115,7 @@ function Orders({ user }) {
         method,
         amount: paymentAmounts[method] || 0,
       })),
+      notes: editingOrder?.notes || "",
     });
 
     setEditingOrder(null);
@@ -156,12 +167,38 @@ function Orders({ user }) {
           />
 
           <Divider orientation="left">Ubicación</Divider>
-          <Select
+          {/* <Select
             value={editingOrder?.location}
             style={{ width: "100%", marginBottom: 16 }}
             options={zonesOptions}
             onChange={(value) => setEditingOrder({ ...editingOrder, location: value })}
-          />
+          /> */}
+
+          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+            {zonesOptions.map((zone) => (
+              <Button
+                key={zone.value}
+                style={{
+                  flex: "1 1 calc(50% - 12px)",
+                  minWidth: 120,
+                  height: 80,
+                  backgroundColor: editingOrder?.location == zone.value ? getCategoryColor("BEBIDAS") : getCategoryColor("HAMBURGUESAS"),
+                  color: "#fff",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 16,
+                  fontWeight: "bold",
+                }}
+                onClick={() => {
+                  setEditingOrder({ ...editingOrder, location: zone.value });
+                }}
+              >
+                {zone.label}
+              </Button>
+            ))}
+          </div>
 
           <Divider orientation="left">Filtrar por categoría</Divider>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
@@ -175,15 +212,35 @@ function Orders({ user }) {
             </Button>
           </div>
 
-          <Select
-            style={{ width: "100%", marginBottom: 16 }}
-            placeholder="Selecciona un producto"
-            options={filteredProductOptions}
-            onSelect={handleAddProduct}
-            value={undefined}
-            showSearch
-            filterOption={(input, option) => option.label.toLowerCase().includes(input.toLowerCase())}
-          />
+          <Divider orientation="left">Productos disponibles</Divider>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
+            {filteredProductOptions.map((option) => {
+              const categoryInfo = categoryIcons[option.item.category] || {};
+              const IconComponent = categoryInfo.icon || FastfoodIcon; // fallback por si no hay
+
+              return (
+                <Button
+                  key={option.value}
+                  type="primary"
+                  style={{
+                    backgroundColor: categoryInfo.color || "#1890ff",
+                    height: 80,
+                    width: 120,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontSize: 14,
+                    whiteSpace: "normal",
+                  }}
+                  onClick={() => handleAddProduct(option.value, option)}
+                >
+                  <IconComponent style={{ fontSize: 32, marginBottom: 8 }} />
+                  {option.label}
+                </Button>
+              );
+            })}
+          </div>
 
           <Divider orientation="left">Productos actuales</Divider>
           <List
@@ -205,6 +262,9 @@ function Orders({ user }) {
               </List.Item>
             )}
           />
+          <div style={{ width: "100%", marginTop: 16 }}>
+            <TextArea placeholder="Notas..." value={editingOrder?.notes} onChange={(e) => setEditingOrder({ ...editingOrder, notes: e.target.value })} />
+          </div>
 
           <div style={{ marginTop: 24, display: "flex", gap: 8 }}>
             <Button type="primary" onClick={handleUpdateOrder}>
@@ -216,30 +276,33 @@ function Orders({ user }) {
       ) : (
         <>
           <h2>Órdenes registradas</h2>
-          <List
-            itemLayout="vertical"
-            dataSource={orders}
-            renderItem={(item) => (
-              <List.Item key={item.id}>
-                <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
-                {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
-                <Divider style={{ margin: "8px 0" }} />
-                {item.products.map((product, idx) => (
-                  <div key={idx} style={{ marginBottom: 4 }}>
-                    <strong>{product.name}</strong> - ${product.price} x {product.qty}
+          {user && (
+            <List
+              itemLayout="vertical"
+              dataSource={orders}
+              renderItem={(item) => (
+                <List.Item key={item.id}>
+                  <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
+                  {item.notes && <List.Item.Meta title={"Nota"} description={item.notes} />}
+                  {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
+                  <Divider style={{ margin: "8px 0" }} />
+                  {item.products.map((product, idx) => (
+                    <div key={idx} style={{ marginBottom: 4 }}>
+                      <strong>{product.name}</strong> - ${product.price} x {product.qty}
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", justifyContent: "end", width: "100%", gap: 8 }}>
+                    <Button type="primary" onClick={() => setEditingOrder(item)}>
+                      Editar Orden
+                    </Button>
+                    <Button danger onClick={() => showCloseOrderModal(item)}>
+                      Cerrar orden
+                    </Button>
                   </div>
-                ))}
-                <div style={{ display: "flex", justifyContent: "end", width: "100%", gap: 8 }}>
-                  <Button type="primary" onClick={() => setEditingOrder(item)}>
-                    Editar Orden
-                  </Button>
-                  <Button danger onClick={() => showCloseOrderModal(item)}>
-                    Cerrar orden
-                  </Button>
-                </div>
-              </List.Item>
-            )}
-          />
+                </List.Item>
+              )}
+            />
+          )}
         </>
       )}
 
@@ -261,15 +324,14 @@ function Orders({ user }) {
         {orderToClose && (
           <>
             <Divider orientation="left">Métodos de pago</Divider>
-            <Select
-              mode="multiple"
-              allowClear
-              style={{ width: "100%" }}
-              placeholder="Selecciona métodos de pago"
-              onChange={handlePaymentMethodChange}
-              options={paymentMethods}
-              value={selectedPaymentMethods}
-            />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              {paymentMethods.map((method) => (
+                <Button key={method.value} type={selectedPaymentMethods.includes(method.value) ? "primary" : "default"} onClick={() => handleTogglePaymentMethod(method.value)}>
+                  {method.label}
+                </Button>
+              ))}
+            </div>
+
             <div style={{ marginTop: 12 }}>
               {selectedPaymentMethods.map((method) => (
                 <div key={method} style={{ marginBottom: 8 }}>
@@ -284,6 +346,7 @@ function Orders({ user }) {
                 </div>
               ))}
             </div>
+
             <p>
               <strong>Cliente:</strong> {orderToClose.name || "Sin nombre"}
             </p>

@@ -11,6 +11,8 @@ import RestaurantIcon from "@mui/icons-material/Restaurant";
 import LunchDiningIcon from "@mui/icons-material/LunchDining";
 import SportsBarIcon from "@mui/icons-material/SportsBar";
 import { categories } from "../utils/categories";
+import getCategoryColor from "../utils/getColorsByCategories";
+import TextArea from "antd/es/input/TextArea";
 
 function App({ user }) {
   const { data: products } = useFirestoreCRUD("products");
@@ -26,6 +28,7 @@ function App({ user }) {
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
+  const [notes, setNotes] = useState(null)
 
   const zonesOptions = [
     { label: "Zona A", value: "ZONEA" },
@@ -36,7 +39,6 @@ function App({ user }) {
 
   const categoryIcons = {
     BEBIDAS: <LocalDrinkIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    LICORES: <SportsBarIcon style={{ fontSize: 24, marginTop: 5 }} />,
     HAMBURGUESAS: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
     "MENU KIDS": <ChildCareIcon style={{ fontSize: 24, marginTop: 5 }} />,
     "ARABIC FOOD": <RestaurantIcon style={{ fontSize: 24, marginTop: 5 }} />,
@@ -44,7 +46,8 @@ function App({ user }) {
     POSTRES: <CakeIcon style={{ fontSize: 24, marginTop: 5 }} />,
     RACIONES: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
     "HOT DOGS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    "EXTRAS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    EXTRAS: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    NARGUILE: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
   };
 
   useEffect(() => {
@@ -97,6 +100,7 @@ function App({ user }) {
       date: moment().format(),
       status: "open",
       location: selectedZone,
+      notes
     });
   }
 
@@ -139,7 +143,31 @@ function App({ user }) {
             <Input placeholder="Nombre del cliente" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} />
             <Input placeholder="Teléfono del cliente" value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} />
             <Divider orientation="left">Ubicación</Divider>
-            <Select value={selectedZone} style={{ width: "100%", marginBottom: 16 }} options={zonesOptions} onChange={(value) => setSelectedZone(value)} />
+            <div style={{display: "flex", justifyContent: "space-between", width: "100%"}}>
+              {zonesOptions.map((zone) => (
+                <Button
+                  key={zone.value}
+                  style={{
+                    flex: "1 1 calc(50% - 12px)",
+                    minWidth: 120,
+                    height: 80,
+                    backgroundColor: selectedZone == zone.value ? getCategoryColor("BEBIDAS") : getCategoryColor("HAMBURGUESAS"),
+                    color: "#fff",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                  onClick={() => {
+                    setSelectedZone(zone.value)
+                  }}
+                >
+                  {zone.label}
+                </Button>
+              ))}
+            </div>
           </div>
 
           {/* Selector de productos */}
@@ -155,14 +183,34 @@ function App({ user }) {
                 </Button>
               ))}
             </div>
-            <Select
-              style={{ width: "100%" }}
-              options={filteredByCategory}
-              onSelect={(value, item) => {
-                setData([...data, { qty: 1, ...item.item }]);
-                filterProducts(item.item.name);
-              }}
-            />
+            {/* Botones de productos */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              {filteredByCategory?.map((product) => (
+                <Button
+                  key={product.value}
+                  style={{
+                    flex: "1 1 calc(50% - 12px)",
+                    minWidth: 120,
+                    height: 80,
+                    backgroundColor: getCategoryColor(product.item.category),
+                    color: "#fff",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                  onClick={() => {
+                    setData([...data, { qty: 1, ...product.item }]);
+                    filterProducts(product.item.name);
+                  }}
+                >
+                  {categoryIcons[product.item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
+                  <span style={{ marginTop: 8 }}>{product.label}</span>
+                </Button>
+              ))}
+            </div>
           </div>
 
           {/* Lista de productos seleccionados */}
@@ -187,13 +235,17 @@ function App({ user }) {
                   title={item.name}
                   description={`Precio unitario: $${item.price}`}
                 />
-                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                  <Button disabled={item.qty <= 1} onClick={() => onDecrement(index)}>
-                    -
-                  </Button>
-                  <span>{item.qty}</span>
-                  <Button onClick={() => onIncrement(index)}>+</Button>
-                  <Button danger onClick={() => deleteItem(index)}>
+                <div style={{ display: "flex", gap: 16, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+                    <Button size="large" disabled={item.qty <= 1} onClick={() => onDecrement(index)}>
+                      -
+                    </Button>
+                    <span>{item.qty}</span>
+                    <Button size="large" onClick={() => onIncrement(index)}>
+                      +
+                    </Button>
+                  </div>
+                  <Button size="large" danger onClick={() => deleteItem(index)}>
                     Eliminar
                   </Button>
                 </div>
@@ -203,6 +255,9 @@ function App({ user }) {
               </List.Item>
             )}
           />
+           <div style={{ width: "100%", marginTop: 16 }}>
+            <TextArea placeholder="Notas..." value={notes} onChange={(e) => setNotes(e.target.value)}></TextArea>
+           </div>
           <div style={{ width: "100%" }}>
             <Button
               style={{ width: "100%", marginTop: "30px" }}
