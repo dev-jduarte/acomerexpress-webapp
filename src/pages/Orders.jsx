@@ -71,7 +71,6 @@ function Orders({ user }) {
   };
 
   const handleAddProduct = (value, option) => {
-    debugger;
     const exists = editingOrder.products.find((p) => p.id === option.item.id);
     if (exists) return;
 
