@@ -62,6 +62,7 @@ function App({ user }) {
     });
     newData = newData.filter((item) => item).sort((a, b) => a.label.localeCompare(b.label));
     setFormattedProducts(newData);
+    return newData
   }
 
   function onIncrement(index) {
@@ -101,7 +102,7 @@ function App({ user }) {
       status: "open",
       location: selectedZone,
       notes,
-      seller: user
+      seller: user,
     });
   }
 
@@ -174,6 +175,21 @@ function App({ user }) {
           {/* Selector de productos */}
           <div style={{ marginBottom: 24 }}>
             <h3>Seleccionar producto:</h3>
+            <div style={{ margin: "24px 0px" }}>
+              <div style={{ margin: "8px" }}>Buscar productos</div>
+              <Input
+                placeholder="Nombre del producto"
+                type="search"
+                onChange={(e) => {
+                  if (e.target.value?.trim() == "") {
+                    return formatProducts();
+                  }
+                  let newData = formatProducts();
+                  newData = newData.filter((product) => product.label.toLowerCase().includes(e.target.value.toLowerCase()));
+                  setFormattedProducts(newData);
+                }}
+              />
+            </div>
             <div style={{ marginBottom: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
               <Button type={!selectedCategory ? "primary" : "default"} onClick={() => setSelectedCategory(null)}>
                 Todas
