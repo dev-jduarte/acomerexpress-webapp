@@ -106,7 +106,7 @@ const Products = () => {
                 {categories.map((cat) => (
                   <Select.Option key={cat} value={cat}>
                     <Space>
-                      {categoryIcons[cat]} {cat}
+                      {/* {categoryIcons[cat]} */} {cat}
                     </Space>
                   </Select.Option>
                 ))}
@@ -132,19 +132,19 @@ const Products = () => {
               ]}
             >
               <List.Item.Meta
-                avatar={
-                  <Avatar
-                    style={{
-                      backgroundColor: "#f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#1677ff",
-                    }}
-                  >
-                    {categoryIcons[item.category] || <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />}
-                  </Avatar>
-                }
+                // avatar={
+                //   <Avatar
+                //     style={{
+                //       backgroundColor: "#f0f0f0",
+                //       display: "flex",
+                //       alignItems: "center",
+                //       justifyContent: "center",
+                //       color: "#1677ff",
+                //     }}
+                //   >
+                //     {categoryIcons[item.category] || <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />}
+                //   </Avatar>
+                // }
                 title={item.name}
                 description={`Precio: $${item.price} | Categoría: ${item.category}`}
               />
@@ -174,7 +174,7 @@ const Products = () => {
               {categories.map((cat) => (
                 <Select.Option key={cat} value={cat}>
                   <Space>
-                    {categoryIcons[cat]} {cat}
+                    {/* {categoryIcons[cat]} */} {cat}
                   </Space>
                 </Select.Option>
               ))}
