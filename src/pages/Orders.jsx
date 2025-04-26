@@ -108,13 +108,13 @@ function Orders({ user }) {
       phone: editingOrder.phone || "",
       products: editingOrder.products,
       total: updatedTotal,
-      status: "closed",
       location: editingOrder.location || "", // <- nuevo campo
       payments: selectedPaymentMethods.map((method) => ({
         method,
         amount: paymentAmounts[method] || 0,
       })),
       notes: editingOrder?.notes || "",
+      seller: user
     });
 
     setEditingOrder(null);
