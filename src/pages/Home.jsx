@@ -28,7 +28,7 @@ function App({ user }) {
   });
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
-  const [notes, setNotes] = useState(null)
+  const [notes, setNotes] = useState(null);
 
   const zonesOptions = [
     { label: "Zona A", value: "ZONEA" },
@@ -100,7 +100,7 @@ function App({ user }) {
       date: moment().format(),
       status: "open",
       location: selectedZone,
-      notes
+      notes,
     });
   }
 
@@ -143,7 +143,7 @@ function App({ user }) {
             <Input placeholder="Nombre del cliente" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} />
             <Input placeholder="Teléfono del cliente" value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} />
             <Divider orientation="left">Ubicación</Divider>
-            <div style={{display: "flex", justifyContent: "space-between", width: "100%"}}>
+            <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
               {zonesOptions.map((zone) => (
                 <Button
                   key={zone.value}
@@ -161,7 +161,7 @@ function App({ user }) {
                     fontWeight: "bold",
                   }}
                   onClick={() => {
-                    setSelectedZone(zone.value)
+                    setSelectedZone(zone.value);
                   }}
                 >
                   {zone.label}
@@ -207,7 +207,18 @@ function App({ user }) {
                   }}
                 >
                   {categoryIcons[product.item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
-                  <span style={{ marginTop: 8 }}>{product.label}</span>
+                  <span
+                    style={{
+                      marginTop: 8,
+                      textAlign: "center",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      width: "100%",
+                    }}
+                  >
+                    {product.label}
+                  </span>
                 </Button>
               ))}
             </div>
@@ -255,9 +266,9 @@ function App({ user }) {
               </List.Item>
             )}
           />
-           <div style={{ width: "100%", marginTop: 16 }}>
+          <div style={{ width: "100%", marginTop: 16 }}>
             <TextArea placeholder="Notas..." value={notes} onChange={(e) => setNotes(e.target.value)}></TextArea>
-           </div>
+          </div>
           <div style={{ width: "100%" }}>
             <Button
               style={{ width: "100%", marginTop: "30px" }}
