@@ -216,7 +216,8 @@ function Orders({ user }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
             {filteredProductOptions.map((option) => {
               const categoryInfo = categoryIcons[option.item.category] || {};
-              const IconComponent = categoryInfo.icon || FastfoodIcon; // fallback por si no hay
+              debugger
+              const IconComponent = categoryInfo?.icon || categoryIcons["HAMBURGUESAS"].icon; // fallback por si no hay
 
               return (
                 <Button
