@@ -71,7 +71,6 @@ function Orders({ user }) {
   };
 
   const handleAddProduct = (value, option) => {
-    debugger;
     const exists = editingOrder.products.find((p) => p.id === option.item.id);
     if (exists) return;
 
@@ -109,13 +108,13 @@ function Orders({ user }) {
       phone: editingOrder.phone || "",
       products: editingOrder.products,
       total: updatedTotal,
-      status: "closed",
       location: editingOrder.location || "", // <- nuevo campo
       payments: selectedPaymentMethods.map((method) => ({
         method,
         amount: paymentAmounts[method] || 0,
       })),
       notes: editingOrder?.notes || "",
+      seller: user
     });
 
     setEditingOrder(null);
@@ -216,7 +215,8 @@ function Orders({ user }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
             {filteredProductOptions.map((option) => {
               const categoryInfo = categoryIcons[option.item.category] || {};
-              const IconComponent = categoryInfo.icon || FastfoodIcon; // fallback por si no hay
+              debugger
+              const IconComponent = categoryInfo?.icon || categoryIcons["HAMBURGUESAS"].icon; // fallback por si no hay
 
               return (
                 <Button

@@ -101,6 +101,7 @@ function App({ user }) {
       status: "open",
       location: selectedZone,
       notes,
+      seller: user
     });
   }
 
