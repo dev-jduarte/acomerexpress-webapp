@@ -23,11 +23,17 @@ function App() {
   const userOptions = [
     { label: "Usuario 001", value: "USUARIO001" },
     { label: "Usuario 002", value: "USUARIO002" },
+    { label: "CAJA", value: "CAJA" },
+    { label: "APOYO 001", value: "APOYO001" },
+    { label: "APOYO 002", value: "APOYO002" },
   ];
 
   const userPasswords = {
     USUARIO001: import.meta.env.VITE_USER001_PASSWORD,
-    USUARIO002: import.meta.env.VITE_USER002_PASSWORD
+    USUARIO002: import.meta.env.VITE_USER002_PASSWORD,
+    CAJA: import.meta.env.VITE_CAJA_PASSWORD,
+    APOYO001: import.meta.env.VITE_APOYO001_PASSWORD,
+    APOYO002: import.meta.env.VITE_APOYO002_PASSWORD
   };
 
   const handleUserSelect = (value) => {
