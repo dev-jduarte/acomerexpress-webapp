@@ -18,6 +18,8 @@ function Orders({ user }) {
   const [isClosingModalVisible, setIsClosingModalVisible] = useState(false);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([]);
   const [paymentAmounts, setPaymentAmounts] = useState({});
+  const [searchValue, setSearchValue] = useState(null);
+  const [displayData, setDisplayData] = useState([]);
 
   const paymentMethods = [
     { label: "PAGO MOVIL", value: "PAGOMOVIL" },
@@ -48,7 +50,12 @@ function Orders({ user }) {
   }, [products]);
 
   useEffect(() => {
-    refetch({ status: "open" });
+    refetch({ status: "open" })
+      .then((res) => setDisplayData(res))
+      .catch((err) => {
+        console.log(err);
+        setDisplayData([]);
+      });
   }, []);
 
   const zonesOptions = [
@@ -114,7 +121,7 @@ function Orders({ user }) {
         amount: paymentAmounts[method] || 0,
       })),
       notes: editingOrder?.notes || "",
-      seller: user
+      seller: user,
     });
 
     setEditingOrder(null);
@@ -215,7 +222,6 @@ function Orders({ user }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
             {filteredProductOptions.map((option) => {
               const categoryInfo = categoryIcons[option.item.category] || {};
-              debugger
               const IconComponent = categoryInfo?.icon || categoryIcons["HAMBURGUESAS"].icon; // fallback por si no hay
 
               return (
@@ -276,31 +282,50 @@ function Orders({ user }) {
       ) : (
         <>
           <h2>Órdenes registradas</h2>
-          {user && (
+          <Input
+            placeholder="Buscar ordenes por nombre"
+            value={searchValue}
+            onChange={(e) => {
+              if (e.target.value.trim() == "") {
+                const newData = orders;
+                setDisplayData(newData);
+                setSearchValue(e.target.value);
+                return;
+              }
+              const newData = orders.filter((order) => order?.name?.toLowerCase().includes(e?.target?.value?.toLowerCase()));
+              setDisplayData(newData);
+              setSearchValue(e.target.value);
+            }}
+          />
+          {user && displayData && (
             <List
               itemLayout="vertical"
-              dataSource={orders}
-              renderItem={(item) => (
-                <List.Item key={item.id}>
-                  <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
-                  {item.notes && <List.Item.Meta title={"Nota"} description={item.notes} />}
-                  {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
-                  <Divider style={{ margin: "8px 0" }} />
-                  {item.products.map((product, idx) => (
-                    <div key={idx} style={{ marginBottom: 4 }}>
-                      <strong>{product.name}</strong> - ${product.price} x {product.qty}
-                    </div>
-                  ))}
-                  <div style={{ display: "flex", justifyContent: "end", width: "100%", gap: 8 }}>
-                    <Button type="primary" onClick={() => setEditingOrder(item)}>
-                      Editar Orden
-                    </Button>
-                    <Button danger onClick={() => showCloseOrderModal(item)}>
-                      Cerrar orden
-                    </Button>
-                  </div>
-                </List.Item>
-              )}
+              dataSource={displayData}
+              renderItem={(item) => {
+                if ((item.seller && item.seller == user) || user == "CAJA" || !item.seller) {
+                  return (
+                    <List.Item key={item.id}>
+                      <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
+                      {item.notes && <List.Item.Meta title={"Nota"} description={item.notes} />}
+                      {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
+                      <Divider style={{ margin: "8px 0" }} />
+                      {item.products.map((product, idx) => (
+                        <div key={idx} style={{ marginBottom: 4 }}>
+                          <strong>{product.name}</strong> - ${product.price} x {product.qty}
+                        </div>
+                      ))}
+                      <div style={{ display: "flex", justifyContent: "end", width: "100%", gap: 8 }}>
+                        <Button type="primary" onClick={() => setEditingOrder(item)}>
+                          Editar Orden
+                        </Button>
+                        <Button danger onClick={() => showCloseOrderModal(item)}>
+                          Cerrar orden
+                        </Button>
+                      </div>
+                    </List.Item>
+                  );
+                }
+              }}
             />
           )}
         </>

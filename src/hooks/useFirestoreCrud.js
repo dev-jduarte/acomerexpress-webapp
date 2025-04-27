@@ -36,8 +36,10 @@ export const useFirestoreCRUD = (collectionName, firstFetch = true) => {
       const snapshot = await getDocs(q);
       const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setData(items);
+      return items
     } catch (err) {
       setError(err.message);
+      return null
     } finally {
       setLoading(false);
     }

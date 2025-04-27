@@ -115,16 +115,16 @@ function App() {
               <Link style={linkStyle} to="/ordenes-cerradas">
                 Órdenes cerradas
               </Link>
-              <Link style={linkStyle} to="/productos">
+              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/productos">
                 Productos
-              </Link>
+              </Link>}
             </nav>
 
             <Routes>
               <Route path="/" element={<Home user={selectedUser} />} />
               <Route path="/ordenes" element={<Orders user={selectedUser} />} />
               <Route path="/ordenes-cerradas" element={<ClosedOrders />} />
-              <Route path="/productos" element={<Products />} />
+              {selectedUser && selectedUser == 'CAJA' && <Route path="/productos" element={<Products />} />}
             </Routes>
           </>
         )}
