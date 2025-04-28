@@ -1,19 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Button, Modal, Form, Input, InputNumber, Select, List, Avatar, Space, Row, Col } from "antd";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
-import {
-  LocalDrink as LocalDrinkIcon,
-  SportsBar as SportsBarIcon,
-  LunchDining as LunchDiningIcon,
-  BreakfastDining as BreakfastDiningIcon,
-  Fastfood as FastfoodIcon,
-  ChildCare as ChildCareIcon,
-  Restaurant as RestaurantIcon,
-  Cake as CakeIcon,
-} from "@mui/icons-material";
 import { categories } from "../utils/categories";
 import { message, App as AntdApp } from "antd";
-import { categoryIcons } from "../utils/categoryIcons";
 
 const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
@@ -106,7 +95,7 @@ const Products = () => {
                 {categories.map((cat) => (
                   <Select.Option key={cat} value={cat}>
                     <Space>
-                      {/* {categoryIcons[cat]} */} {cat}
+                      {cat}
                     </Space>
                   </Select.Option>
                 ))}
@@ -132,19 +121,6 @@ const Products = () => {
               ]}
             >
               <List.Item.Meta
-                // avatar={
-                //   <Avatar
-                //     style={{
-                //       backgroundColor: "#f0f0f0",
-                //       display: "flex",
-                //       alignItems: "center",
-                //       justifyContent: "center",
-                //       color: "#1677ff",
-                //     }}
-                //   >
-                //     {categoryIcons[item.category] || <BreakfastDiningIcon style={{ fontSize: 24, marginTop: 5 }} />}
-                //   </Avatar>
-                // }
                 title={item.name}
                 description={`Precio: $${item.price} | Categoría: ${item.category}`}
               />
@@ -169,12 +145,15 @@ const Products = () => {
           <Form.Item name="price" label="Precio ($)" rules={[{ required: true, type: "number", min: 0 }]}>
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
+          <Form.Item name="1ty" label="Cantidad" rules={[{ required: true, type: "number", min: 0 }]}>
+            <InputNumber style={{ width: "100%" }} />
+          </Form.Item>
           <Form.Item name="category" label="Categoría" rules={[{ required: true }]}>
             <Select placeholder="Selecciona una categoría">
               {categories.map((cat) => (
                 <Select.Option key={cat} value={cat}>
                   <Space>
-                    {/* {categoryIcons[cat]} */} {cat}
+                    {cat}
                   </Space>
                 </Select.Option>
               ))}

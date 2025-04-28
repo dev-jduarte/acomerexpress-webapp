@@ -16,7 +16,7 @@ import TextArea from "antd/es/input/TextArea";
 
 function App({ user }) {
   const { data: products } = useFirestoreCRUD("products");
-  const { data: users, createDocument: createClient } = useFirestoreCRUD("clients");
+  const { data: users, createDocument: createClient, updateDocument } = useFirestoreCRUD("clients");
   const { createDocument } = useFirestoreCRUD("orders");
   const [status, setStatus] = useState(null);
   const [formattedProducts, setFormattedProducts] = useState();
@@ -89,11 +89,16 @@ function App({ user }) {
     formatProducts();
   }
 
-  function closeOrder() {
+  function createOrder() {
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);
     }
+
+    data.map(product => {
+      updateDocument(product.id, {stock: product["stock"] - product.qty})
+    })
+
     createDocument({
       name: client.name || "Sin nombre",
       products: data,
@@ -292,7 +297,7 @@ function App({ user }) {
               type="primary"
               disabled={!data.length || client?.name?.trim() == ""}
               onClick={() => {
-                closeOrder();
+                createOrder();
                 setStatus(null);
                 setData([]);
                 formatProducts();
