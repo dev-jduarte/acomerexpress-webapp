@@ -9,6 +9,7 @@ const { RangePicker } = DatePicker;
 function ClosedOrders() {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
   const { data: products } = useFirestoreCRUD("products");
+  const [displayData, setDisplayData] = useState(orders);
 
   const [dateRange, setDateRange] = useState(null); // [moment, moment]
 

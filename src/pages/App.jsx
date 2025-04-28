@@ -4,6 +4,7 @@ import Home from "./Home";
 import Orders from "./Orders";
 import ClosedOrders from "./ClosedOrders";
 import Products from "./Products"
+import CloseDay from "./CloseDay"
 import { Select, Modal, Input, Typography } from "antd";
 import { message, App as AntdApp } from 'antd';
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
@@ -118,6 +119,9 @@ function App() {
               {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/productos">
                 Productos
               </Link>}
+              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/cierreCaja">
+                Cierre caja
+              </Link>}
             </nav>
 
             <Routes>
@@ -125,6 +129,7 @@ function App() {
               <Route path="/ordenes" element={<Orders user={selectedUser} />} />
               <Route path="/ordenes-cerradas" element={<ClosedOrders />} />
               {selectedUser && selectedUser == 'CAJA' && <Route path="/productos" element={<Products />} />}
+              {selectedUser && selectedUser == 'CAJA' && <Route path="/cierreCaja" element={<CloseDay />} />}
             </Routes>
           </>
         )}

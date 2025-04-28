@@ -9,7 +9,7 @@ import TextArea from "antd/es/input/TextArea";
 
 function Orders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
-  const { data: products } = useFirestoreCRUD("products");
+  const { data: products, updateDocument: updateProducts } = useFirestoreCRUD("products");
 
   const [editingOrder, setEditingOrder] = useState(null);
   const [productOptions, setProductOptions] = useState([]);
@@ -123,6 +123,14 @@ function Orders({ user }) {
       notes: editingOrder?.notes || "",
       seller: user,
     });
+
+    await Promise.all(
+      editingOrder.products.map(async (product) => {
+        await updateProducts(editingOrder.id, {
+          stock: { stock: product["stock"] - product.qty },
+        });
+      })
+    );
 
     setEditingOrder(null);
     setSelectedPaymentMethods([]);
