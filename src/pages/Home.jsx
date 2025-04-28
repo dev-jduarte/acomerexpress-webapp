@@ -95,9 +95,9 @@ function App({ user }) {
       createClient(client);
     }
 
-    data.map(product => {
-      updateDocument(product.id, {stock: product["stock"] - product.qty})
-    })
+    // data.map(product => {
+    //   updateDocument(product.id, {stock: product["stock"] - product.qty})
+    // })
 
     createDocument({
       name: client.name || "Sin nombre",
@@ -197,7 +197,7 @@ function App({ user }) {
             </div>
             <div style={{ marginBottom: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
               <Button type={!selectedCategory ? "primary" : "default"} onClick={() => setSelectedCategory(null)}>
-                Todas
+                TODAS
               </Button>
               {categories.map((cat) => (
                 <Button key={cat} type={selectedCategory === cat ? "primary" : "default"} onClick={() => setSelectedCategory(cat)}>

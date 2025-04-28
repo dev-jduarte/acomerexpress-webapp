@@ -28,6 +28,7 @@ function Orders({ user }) {
     { label: "ZELLE", value: "ZELLE" },
     { label: "BINANCE", value: "BINANCE" },
     { label: "PUNTO DE VENTA", value: "PUNTODEVENTA" },
+    { label: "COFFEE LOVERS", value: "COFEELOVERS"}
   ];
 
   const filteredProductOptions = productOptions.filter((option) => {
@@ -124,13 +125,13 @@ function Orders({ user }) {
       seller: user,
     });
 
-    await Promise.all(
-      editingOrder.products.map(async (product) => {
-        await updateProducts(editingOrder.id, {
-          stock: { stock: product["stock"] - product.qty },
-        });
-      })
-    );
+    // await Promise.all(
+    //   editingOrder.products.map(async (product) => {
+    //     await updateProducts(editingOrder.id, {
+    //       stock: { stock: product["stock"] - product.qty },
+    //     });
+    //   })
+    // );
 
     setEditingOrder(null);
     setSelectedPaymentMethods([]);
