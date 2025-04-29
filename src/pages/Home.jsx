@@ -13,6 +13,7 @@ import SportsBarIcon from "@mui/icons-material/SportsBar";
 import { categories } from "../utils/categories";
 import getCategoryColor from "../utils/getColorsByCategories";
 import TextArea from "antd/es/input/TextArea";
+import CoffeeIcon from '@mui/icons-material/Coffee';
 
 function App({ user }) {
   const { data: products, updateDocument: updateProducts } = useFirestoreCRUD("products");
@@ -48,6 +49,7 @@ function App({ user }) {
     "HOT DOGS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
     EXTRAS: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
     NARGUILE: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
+    "COFFEE LOVERS": <CoffeeIcon style={{fontSize: 24, marginTop: 5}} />
   };
 
   useEffect(() => {
@@ -132,7 +134,7 @@ function App({ user }) {
   }
 
   const filteredByCategory = formattedProducts?.filter((product) => !selectedCategory || product.item.category === selectedCategory);
-
+  debugger
   return (
     <div style={{ padding: 16, maxWidth: 800, margin: "0 auto" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
@@ -259,7 +261,7 @@ function App({ user }) {
                       width: "100%",
                     }}
                   >
-                    {product.label}
+                    {product.item.subCategory ? `(${product.item.subCategory}) ${product.label}` : product.label}
                   </span>
                 </Button>
               ))}

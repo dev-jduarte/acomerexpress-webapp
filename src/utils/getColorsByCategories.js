@@ -20,6 +20,8 @@ export default function getCategoryColor(category) {
         return "#ff5722"; // rojo/naranja
       case "EXTRAS":
         return "#607d8b"; // gris azulado
+      case "COFFEE LOVERS":
+        return "#795548"
       default:
         return "#90a4ae"; // gris de fallback
     }

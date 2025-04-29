@@ -17,7 +17,7 @@ function CloseDay() {
     ZELLE: 0,
     BINANCE: 0,
     PUNTODEVENTA: 0,
-    COFEELOVERS: 0,
+    COFFEELOVERS: 0,
   };
 
   const [paymentData, setPaymentData] = useState(initialPaymentState);

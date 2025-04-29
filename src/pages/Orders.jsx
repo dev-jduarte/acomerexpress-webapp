@@ -28,7 +28,7 @@ function Orders({ user }) {
     { label: "ZELLE", value: "ZELLE" },
     { label: "BINANCE", value: "BINANCE" },
     { label: "PUNTO DE VENTA", value: "PUNTODEVENTA" },
-    { label: "COFFEE LOVERS", value: "COFEELOVERS" },
+    { label: "COFFEE LOVERS", value: "COFFEELOVERS" },
     { label: "PROPINA", value: "PROPINA" },
   ];
 
@@ -281,7 +281,8 @@ function Orders({ user }) {
                   onClick={() => handleAddProduct(option.value, option)}
                 >
                   <IconComponent style={{ fontSize: 32, marginBottom: 8 }} />
-                  {option.label}
+                  {/*   {product.item.subCategory ? `(${product.item.subCategory}) ${product.label}` : product.label} */}
+                  {option.item.subCategory ? `(${option.item.subCategory}) ${option.label}` : option.label}
                 </Button>
               );
             })}

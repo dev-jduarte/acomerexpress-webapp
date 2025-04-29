@@ -7,6 +7,7 @@ import LunchDiningIcon from "@mui/icons-material/LunchDining";
 import KebabDiningIcon from "@mui/icons-material/KebabDining";
 import EmojiFoodBeverageIcon from "@mui/icons-material/EmojiFoodBeverage";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import CoffeeIcon from '@mui/icons-material/Coffee';
 
 export const categoryIcons = {
   BEBIDAS: { icon: LocalBarIcon, color: "#2196F3" }, // azul
@@ -19,4 +20,5 @@ export const categoryIcons = {
   "ARABIC FOOD": { icon: KebabDiningIcon, color: "#8D6E63" }, // marrón claro
   "HOT DOGS": { icon: FastfoodIcon, color: "#FFC107" }, // amarillo
   EXTRAS: { icon: AddCircleIcon, color: "#607D8B" }, // gris
+  "COFFEE LOVERS": {icon: CoffeeIcon, color: "#795548"}
 };
