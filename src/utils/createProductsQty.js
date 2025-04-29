@@ -55,7 +55,6 @@ const updateDocument = async (id, updatedData) => {
         product["stock"] = 100
     })
   )
-  debugger
   console.log(products)
   return products
 })();

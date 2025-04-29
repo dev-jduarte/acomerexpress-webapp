@@ -6,6 +6,8 @@ import { categories } from "../utils/categories";
 import { categoryIcons } from "../utils/categoryIcons";
 import getCategoryColor from "../utils/getColorsByCategories";
 import TextArea from "antd/es/input/TextArea";
+import _ from "lodash";
+import Ticket from "../components/Ticket";
 
 function Orders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
@@ -32,20 +34,17 @@ function Orders({ user }) {
     { label: "PROPINA", value: "PROPINA" },
   ];
 
-  // const filteredProductOptions = productOptions.filter((option) => {
-  //   const matchesCategory = selectedCategory ? option.item.category === selectedCategory : true;
-  //   const notAlreadyAdded = !editingOrder?.products.some((p) => p.id === option.item.id);
-  //   return matchesCategory && notAlreadyAdded;
-  // });
-
-  const filteredProductOptions = productOptions.filter((option) => {
+  let filteredProductOptions = productOptions.filter((option) => {
     const matchesCategory = selectedCategory ? option.item.category === selectedCategory : true;
     const notAlreadyAdded = !editingOrder?.products.some((p) => p.id === option.item.id);
-    const matchesSearch = searchValue
-      ? option.label.toLowerCase().includes(searchValue.toLowerCase())
-      : true;
+    const matchesSearch = searchValue ? option.label.toLowerCase().includes(searchValue.toLowerCase()) : true;
     return matchesCategory && notAlreadyAdded && matchesSearch;
   });
+
+  if (selectedCategory == "COFFEE LOVERS") {
+    filteredProductOptions = _.orderBy(filteredProductOptions, (x) => x.item.subCategory);
+    filteredProductOptions = _.groupBy(filteredProductOptions, (x) => x.item.subCategory);
+  }
 
   useEffect(() => {
     if (products) {
@@ -132,12 +131,10 @@ function Orders({ user }) {
         amount: paymentAmounts[method] || 0,
       })),
       notes: editingOrder?.notes || "",
-      seller: user,
     });
 
     await Promise.all(
       editingOrder.products.map(async (product) => {
-        debugger;
         if (!product.ingredients) {
           await updateProducts(product.id, {
             stock: product["stock"] - product.qty,
@@ -145,10 +142,8 @@ function Orders({ user }) {
         }
 
         if (product.ingredients) {
-          debugger;
           const productToSubtract = products.find((p) => p.name == product.ingredients);
           if (productToSubtract) {
-            debugger;
             const qtyToSubtract = product.subtract || 1;
             await updateProducts(productToSubtract.id, {
               stock: productToSubtract["stock"] - qtyToSubtract,
@@ -188,7 +183,7 @@ function Orders({ user }) {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: 16 }}>
+    <div style={{ maxWidth: 800, margin: "0 auto", padding: 16 }}>
       {editingOrder ? (
         <>
           <h2>Editando orden: {editingOrder.name}</h2>
@@ -207,12 +202,6 @@ function Orders({ user }) {
           />
 
           <Divider orientation="left">Ubicación</Divider>
-          {/* <Select
-            value={editingOrder?.location}
-            style={{ width: "100%", marginBottom: 16 }}
-            options={zonesOptions}
-            onChange={(value) => setEditingOrder({ ...editingOrder, location: value })}
-          /> */}
 
           <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
             {zonesOptions.map((zone) => (
@@ -240,54 +229,6 @@ function Orders({ user }) {
             ))}
           </div>
 
-          <Divider orientation="left">Filtrar por categoría</Divider>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-            {categories.map((cat) => (
-              <Button key={cat} type={selectedCategory === cat ? "primary" : "default"} onClick={() => setSelectedCategory(cat)}>
-                {cat}
-              </Button>
-            ))}
-            <Button type={!selectedCategory ? "primary" : "default"} onClick={() => setSelectedCategory(null)}>
-              Todos
-            </Button>
-          </div>
-
-          <div style={{ margin: "24px 0px" }}>
-            <div style={{ margin: "8px" }}>Buscar productos</div>
-            <Input placeholder="Buscar producto..." value={searchValue} onChange={(e) => setSearchValue(e.target.value)} style={{ marginBottom: 10 }} />
-          </div>
-
-          <Divider orientation="left">Productos disponibles</Divider>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
-            {filteredProductOptions.map((option) => {
-              const categoryInfo = categoryIcons[option.item.category] || {};
-              const IconComponent = categoryInfo?.icon || categoryIcons["HAMBURGUESAS"].icon; // fallback por si no hay
-
-              return (
-                <Button
-                  key={option.value}
-                  type="primary"
-                  style={{
-                    backgroundColor: categoryInfo.color || "#1890ff",
-                    height: 80,
-                    width: 120,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    fontSize: 14,
-                    whiteSpace: "normal",
-                  }}
-                  onClick={() => handleAddProduct(option.value, option)}
-                >
-                  <IconComponent style={{ fontSize: 32, marginBottom: 8 }} />
-                  {/*   {product.item.subCategory ? `(${product.item.subCategory}) ${product.label}` : product.label} */}
-                  {option.item.subCategory ? `(${option.item.subCategory}) ${option.label}` : option.label}
-                </Button>
-              );
-            })}
-          </div>
-
           <Divider orientation="left">Productos actuales</Divider>
           <List
             bordered
@@ -308,6 +249,120 @@ function Orders({ user }) {
               </List.Item>
             )}
           />
+
+          <Divider orientation="left">Filtrar por categoría</Divider>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+            {categories.map((cat) => (
+              <Button key={cat} type={selectedCategory === cat ? "primary" : "default"} onClick={() => setSelectedCategory(cat)}>
+                {cat}
+              </Button>
+            ))}
+            <Button type={!selectedCategory ? "primary" : "default"} onClick={() => setSelectedCategory(null)}>
+              TODOS
+            </Button>
+          </div>
+
+          <div style={{ margin: "24px 0px" }}>
+            <div style={{ margin: "8px" }}>Buscar productos</div>
+            <Input placeholder="Buscar producto..." value={searchValue} onChange={(e) => setSearchValue(e.target.value)} style={{ marginBottom: 10 }} />
+          </div>
+
+          <Divider orientation="left">Productos disponibles</Divider>
+          <div style={{ display: selectedCategory == 'COFFEE LOVERS' ? "block" :"flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
+            {selectedCategory != "COFFEE LOVERS" &&
+              filteredProductOptions.map((option) => {
+                const categoryInfo = categoryIcons[option.item.category] || {};
+                const IconComponent = categoryInfo?.icon || categoryIcons["HAMBURGUESAS"].icon; // fallback por si no hay
+
+                return (
+                  <Button
+                    key={option.value}
+                    type="primary"
+                    style={{
+                      backgroundColor: categoryInfo.color || "#1890ff",
+                      flex: "1 1 calc(50% - 12px)",
+                      minWidth: 120,
+                      height: 80,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      fontSize: 14,
+                      whiteSpace: "normal",
+                    }}
+                    onClick={() => handleAddProduct(option.value, option)}
+                  >
+                    <IconComponent style={{ fontSize: 32, marginBottom: 8 }} />
+                    {/*   {product.item.subCategory ? `(${product.item.subCategory}) ${product.label}` : product.label} */}
+                    {option.item.subCategory ? `(${option.item.subCategory}) ${option.label}` : option.label}
+                  </Button>
+                );
+              })}
+
+            {selectedCategory === "COFFEE LOVERS" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                {Object.keys(filteredProductOptions).map((subcategory) => (
+                  <div key={subcategory} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Subcategoría como título */}
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: "bold",
+                        marginBottom: 4,
+                        padding: "4px 8px",
+                        backgroundColor: "#f5f5f5",
+                        borderRadius: 6,
+                      }}
+                    >
+                      {subcategory}
+                    </div>
+
+                    {/* Lista de opciones */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                      {filteredProductOptions[subcategory].map((option) => {
+                        const categoryInfo = categoryIcons[option.item.category] || {};
+                        const IconComponent = categoryInfo.icon || categoryIcons["HAMBURGUESAS"].icon;
+
+                        return (
+                          <Button
+                            key={option.value}
+                            type="primary"
+                            style={{
+                              backgroundColor: categoryInfo.color || "#1890ff",
+                              flex: "1 1 calc(50% - 12px)",
+                              minWidth: 120,
+                              height: 80,
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              fontSize: 14,
+                              whiteSpace: "normal",
+                            }}
+                            onClick={() => handleAddProduct(option.value, option)}
+                          >
+                            <IconComponent style={{ fontSize: 32, marginBottom: 8 }} />
+                            <span
+                              style={{
+                                textAlign: "center",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                width: "100%",
+                              }}
+                            >
+                              {option.label}
+                            </span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div style={{ width: "100%", marginTop: 16 }}>
             <TextArea placeholder="Notas..." value={editingOrder?.notes} onChange={(e) => setEditingOrder({ ...editingOrder, notes: e.target.value })} />
           </div>
@@ -354,6 +409,9 @@ function Orders({ user }) {
                           <strong>{product.name}</strong> - ${product.price} x {product.qty}
                         </div>
                       ))}
+                      <div>
+                        <strong>Vendedor: {item.seller}</strong>
+                      </div>
                       <div style={{ display: "flex", justifyContent: "end", width: "100%", gap: 8 }}>
                         <Button type="primary" onClick={() => setEditingOrder(item)}>
                           Editar Orden
@@ -361,6 +419,7 @@ function Orders({ user }) {
                         <Button danger onClick={() => showCloseOrderModal(item)}>
                           Cerrar orden
                         </Button>
+                        {user == 'CAJA' && <Ticket item={item} cliente={item.name} pedido={item.products} total={item.total} mesonero={item.seller} zona={item.location} notes={item.notes}/>}
                       </div>
                     </List.Item>
                   );
@@ -382,7 +441,8 @@ function Orders({ user }) {
         okText="Confirmar"
         cancelText="Cancelar"
         okButtonProps={{
-          disabled: !orderToClose ||
+          disabled:
+            !orderToClose ||
             Object.entries(paymentAmounts)
               .filter(([method]) => method !== "PROPINA")
               .reduce((acc, [, amount]) => acc + Number(amount || 0), 0) !== orderToClose.total,

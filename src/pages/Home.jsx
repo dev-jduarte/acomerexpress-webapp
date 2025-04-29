@@ -13,7 +13,8 @@ import SportsBarIcon from "@mui/icons-material/SportsBar";
 import { categories } from "../utils/categories";
 import getCategoryColor from "../utils/getColorsByCategories";
 import TextArea from "antd/es/input/TextArea";
-import CoffeeIcon from '@mui/icons-material/Coffee';
+import CoffeeIcon from "@mui/icons-material/Coffee";
+import _ from "lodash";
 
 function App({ user }) {
   const { data: products, updateDocument: updateProducts } = useFirestoreCRUD("products");
@@ -49,7 +50,7 @@ function App({ user }) {
     "HOT DOGS": <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
     EXTRAS: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
     NARGUILE: <FastfoodIcon style={{ fontSize: 24, marginTop: 5 }} />,
-    "COFFEE LOVERS": <CoffeeIcon style={{fontSize: 24, marginTop: 5}} />
+    "COFFEE LOVERS": <CoffeeIcon style={{ fontSize: 24, marginTop: 5 }} />,
   };
 
   useEffect(() => {
@@ -64,7 +65,7 @@ function App({ user }) {
     });
     newData = newData.filter((item) => item).sort((a, b) => a.label.localeCompare(b.label));
     setFormattedProducts(newData);
-    return newData
+    return newData;
   }
 
   function onIncrement(index) {
@@ -92,15 +93,12 @@ function App({ user }) {
   }
 
   function createOrder() {
-    debugger
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);
     }
 
-    data.map(async product => {
-      debugger
-      //updateDocument(product.id, {stock: product["stock"] - product.qty})
+    data.map(async (product) => {
       if (!product.ingredients) {
         await updateProducts(product.id, {
           stock: product["stock"] - product.qty,
@@ -108,19 +106,16 @@ function App({ user }) {
       }
 
       if (product.ingredients) {
-        debugger
         const productToSubtract = products.find((p) => p.name == product.ingredients);
         if (productToSubtract) {
-          debugger
           const qtyToSubtract = product.subtract || 1;
           await updateProducts(productToSubtract.id, {
             stock: productToSubtract["stock"] - qtyToSubtract,
           });
         }
       }
-    })
+    });
 
-  
     createDocument({
       name: client.name || "Sin nombre",
       products: data,
@@ -133,8 +128,11 @@ function App({ user }) {
     });
   }
 
-  const filteredByCategory = formattedProducts?.filter((product) => !selectedCategory || product.item.category === selectedCategory);
-  debugger
+  let filteredByCategory = formattedProducts?.filter((product) => !selectedCategory || product.item.category === selectedCategory);
+  if (selectedCategory == "COFFEE LOVERS") {
+    filteredByCategory = _.orderBy(filteredByCategory, (x) => x.item.subCategory)
+    filteredByCategory = _.groupBy(filteredByCategory, (x) => x.item.subCategory);
+  }
   return (
     <div style={{ padding: 16, maxWidth: 800, margin: "0 auto" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
@@ -186,8 +184,8 @@ function App({ user }) {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 16,
-                    fontWeight: "bold",
+                    fontSize: 14,
+                    whiteSpace: "normal",
                   }}
                   onClick={() => {
                     setSelectedZone(zone.value);
@@ -228,44 +226,109 @@ function App({ user }) {
               ))}
             </div>
             {/* Botones de productos */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-              {filteredByCategory?.map((product) => (
-                <Button
-                  key={product.value}
-                  style={{
-                    flex: "1 1 calc(50% - 12px)",
-                    minWidth: 120,
-                    height: 80,
-                    backgroundColor: getCategoryColor(product.item.category),
-                    color: "#fff",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    fontWeight: "bold",
-                  }}
-                  onClick={() => {
-                    setData([...data, { qty: 1, ...product.item }]);
-                    filterProducts(product.item.name);
-                  }}
-                >
-                  {categoryIcons[product.item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
-                  <span
+            {selectedCategory != "COFFEE LOVERS" && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                {filteredByCategory?.map((product) => (
+                  <Button
+                    key={product.value}
                     style={{
-                      marginTop: 8,
-                      textAlign: "center",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      width: "100%",
+                      flex: "1 1 calc(50% - 12px)",
+                      minWidth: 120,
+                      height: 80,
+                      backgroundColor: getCategoryColor(product.item.category),
+                      color: "#fff",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                      fontWeight: "bold",
+                    }}
+                    onClick={() => {
+                      setData([...data, { qty: 1, ...product.item }]);
+                      filterProducts(product.item.name);
                     }}
                   >
-                    {product.item.subCategory ? `(${product.item.subCategory}) ${product.label}` : product.label}
-                  </span>
-                </Button>
-              ))}
-            </div>
+                    {categoryIcons[product.item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
+                    <span
+                      style={{
+                        marginTop: 8,
+                        textAlign: "center",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        width: "100%",
+                      }}
+                    >
+                      {product.item.subCategory ? `(${product.item.subCategory}) ${product.label}` : product.label}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
+
+{selectedCategory === "COFFEE LOVERS" && (
+  <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    {Object.keys(filteredByCategory).map((subcategory) => (
+      <div key={subcategory} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {/* Subcategoría como título */}
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 4,
+            padding: "4px 8px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: 6,
+          }}
+        >
+          {subcategory}
+        </div>
+
+        {/* Lista de productos */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          {filteredByCategory[subcategory].map((product) => (
+            <Button
+              key={product.value}
+              style={{
+                flex: "1 1 calc(50% - 12px)",
+                minWidth: 120,
+                height: 80,
+                backgroundColor: getCategoryColor(product.item.category),
+                color: "#fff",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 16,
+                fontWeight: "bold",
+              }}
+              onClick={() => {
+                setData([...data, { qty: 1, ...product.item }]);
+                filterProducts(product.item.name);
+              }}
+            >
+              {categoryIcons[product.item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
+              <span
+                style={{
+                  marginTop: 8,
+                  textAlign: "center",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  width: "100%",
+                }}
+              >
+                {product.label}
+              </span>
+            </Button>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
           </div>
 
           {/* Lista de productos seleccionados */}
