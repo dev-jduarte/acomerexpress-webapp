@@ -15,8 +15,8 @@ const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, ite
 
   const handlePrint = () => {
     const printContent = printRef.current;
-
-    const printWindow = window.open("", "", "width=800,height=600");
+  
+    const printWindow = window.open("", "", "width=300,height=600");
     printWindow.document.write(`
       <html>
         <head>
@@ -24,7 +24,7 @@ const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, ite
           <style>
             @media print {
               @page {
-                size: A4 portrait;
+                size: 58mm auto;
                 margin: 0;
               }
               body {
@@ -32,29 +32,27 @@ const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, ite
                 padding: 0;
               }
               .ticket {
-                width: 50%;
-                height: 100%;
-                box-sizing: border-box;
-                padding: 20mm;
+                width: 100%;
+                padding: 5mm;
                 font-family: Arial, sans-serif;
-                border-right: 1px dashed #000;
+                font-size: 12px;
               }
               h2 {
                 text-align: center;
-                margin-bottom: 20px;
+                font-size: 16px;
+                margin: 0 0 10px 0;
               }
               .line {
-                margin: 6px 0;
-                font-size: 16px;
+                margin: 4px 0;
               }
               .product {
                 display: flex;
                 justify-content: space-between;
-                font-size: 15px;
                 margin: 2px 0;
               }
               .footer {
-                margin-top: 20px;
+                margin-top: 10px;
+                font-weight: bold;
               }
             }
           </style>
@@ -71,6 +69,7 @@ const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, ite
     printWindow.print();
     printWindow.close();
   };
+  
 
   return (
     <>
