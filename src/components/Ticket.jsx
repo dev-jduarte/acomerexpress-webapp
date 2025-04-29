@@ -1,22 +1,14 @@
 import React, { useRef } from "react";
 import { Button } from "antd";
-import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 
-const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, item }) => {
-  const { updateDocument } = useFirestoreCRUD("orders", false);
+const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes }) => {
 
-//   const productsUpdate = pedido.map((product) => product.printed = true)
-//   const productsToPrint = pedido.filter(product => product.printed)
-
-//   updateDocument(item.id, {
-//     products: productsUpdate
-//   })
   const printRef = useRef();
 
   const handlePrint = () => {
     const printContent = printRef.current;
-  
-    const printWindow = window.open("", "", "width=300,height=600");
+
+    const printWindow = window.open("", "", "width=600,height=600");
     printWindow.document.write(`
       <html>
         <head>
@@ -36,6 +28,8 @@ const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, ite
                 padding: 5mm;
                 font-family: Arial, sans-serif;
                 font-size: 12px;
+                break-inside: avoid;
+                page-break-inside: avoid;
               }
               h2 {
                 text-align: center;
@@ -69,13 +63,14 @@ const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, ite
     printWindow.print();
     printWindow.close();
   };
-  
 
   return (
     <>
       {/* Contenido oculto para impresión */}
       <div ref={printRef} style={{ display: "none" }}>
-        <h2>A Comer Express</h2>
+        <div className="line">
+            <strong>A Comer Express</strong>
+        </div>
         <div className="line">
           <strong>Cliente:</strong> {cliente}
         </div>

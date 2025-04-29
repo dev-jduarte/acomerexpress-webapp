@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
-import { Button, List, Input, Select, Divider, Modal, InputNumber, Space } from "antd";
+import { Button, List, Input, Checkbox, Divider, Modal, InputNumber, message } from "antd";
 import moment from "moment";
 import { categories } from "../utils/categories";
 import { categoryIcons } from "../utils/categoryIcons";
@@ -22,6 +22,10 @@ function Orders({ user }) {
   const [paymentAmounts, setPaymentAmounts] = useState({});
   const [searchValue, setSearchValue] = useState(null);
   const [displayData, setDisplayData] = useState([]);
+  const [selectedProductsByOrder, setSelectedProductsByOrder] = useState({});
+  const [activeOrderId, setActiveOrderId] = useState(null);
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   const paymentMethods = [
     { label: "PAGO MOVIL", value: "PAGOMOVIL" },
@@ -45,6 +49,30 @@ function Orders({ user }) {
     filteredProductOptions = _.orderBy(filteredProductOptions, (x) => x.item.subCategory);
     filteredProductOptions = _.groupBy(filteredProductOptions, (x) => x.item.subCategory);
   }
+
+  const toggleProductSelection = (orderId, productIndex) => {
+    setSelectedProductsByOrder((prev) => {
+      // Si no hay orden activa, se establece
+      if (!activeOrderId || activeOrderId === orderId) {
+        const currentSelection = prev[orderId] || [];
+        const alreadySelected = currentSelection.includes(productIndex);
+        const updatedSelection = alreadySelected
+          ? currentSelection.filter((i) => i !== productIndex)
+          : [...currentSelection, productIndex];
+  
+        // Si se deseleccionó el último producto, también se borra el `activeOrderId`
+        const isNowEmpty = updatedSelection.length === 0;
+        if (isNowEmpty) setActiveOrderId(null);
+        else setActiveOrderId(orderId);
+  
+        return { [orderId]: updatedSelection };
+      } else {
+        // Mostrar una advertencia o simplemente ignorar
+        messageApi.warning("Solo puedes seleccionar productos de un cliente a la vez");
+        return prev;
+      }
+    });
+  };
 
   useEffect(() => {
     if (products) {
@@ -184,6 +212,7 @@ function Orders({ user }) {
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: 16 }}>
+      {contextHolder}
       {editingOrder ? (
         <>
           <h2>Editando orden: {editingOrder.name}</h2>
@@ -268,7 +297,7 @@ function Orders({ user }) {
           </div>
 
           <Divider orientation="left">Productos disponibles</Divider>
-          <div style={{ display: selectedCategory == 'COFFEE LOVERS' ? "block" :"flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
+          <div style={{ display: selectedCategory == "COFFEE LOVERS" ? "block" : "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
             {selectedCategory != "COFFEE LOVERS" &&
               filteredProductOptions.map((option) => {
                 const categoryInfo = categoryIcons[option.item.category] || {};
@@ -406,9 +435,12 @@ function Orders({ user }) {
                       <Divider style={{ margin: "8px 0" }} />
                       {item.products.map((product, idx) => (
                         <div key={idx} style={{ marginBottom: 4 }}>
-                          <strong>{product.name}</strong> - ${product.price} x {product.qty}
+                          <Checkbox checked={selectedProductsByOrder[item.id]?.includes(idx)} onChange={() => toggleProductSelection(item.id, idx)}>
+                            <strong>{product.name}</strong> - ${product.price} x {product.qty}
+                          </Checkbox>
                         </div>
                       ))}
+
                       <div>
                         <strong>Vendedor: {item.seller}</strong>
                       </div>
@@ -419,7 +451,11 @@ function Orders({ user }) {
                         <Button danger onClick={() => showCloseOrderModal(item)}>
                           Cerrar orden
                         </Button>
-                        {user == 'CAJA' && <Ticket item={item} cliente={item.name} pedido={item.products} total={item.total} mesonero={item.seller} zona={item.location} notes={item.notes}/>}
+                        {user == "CAJA" && (
+                          <Ticket cliente={item.name} pedido={displayData.flatMap((order) =>
+                            (selectedProductsByOrder[order.id] || []).map((idx) => order.products[idx])
+                          )} total={item.total} mesonero={item.seller} zona={item.location} notes={item.notes} />
+                        )}
                       </div>
                     </List.Item>
                   );
