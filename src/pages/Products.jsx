@@ -145,9 +145,9 @@ const Products = () => {
           <Form.Item name="price" label="Precio ($)" rules={[{ required: true, type: "number", min: 0 }]}>
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="1ty" label="Cantidad" rules={[{ required: true, type: "number", min: 0 }]}>
+          {editingProduct?.stock > -1 && <Form.Item name="stock" label="Cantidad" rules={[{ required: true, type: "number", min: 0 }]}>
             <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
+          </Form.Item>}
           <Form.Item name="category" label="Categoría" rules={[{ required: true }]}>
             <Select placeholder="Selecciona una categoría">
               {categories.map((cat) => (

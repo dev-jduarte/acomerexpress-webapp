@@ -15,7 +15,7 @@ import getCategoryColor from "../utils/getColorsByCategories";
 import TextArea from "antd/es/input/TextArea";
 
 function App({ user }) {
-  const { data: products } = useFirestoreCRUD("products");
+  const { data: products, updateDocument: updateProducts } = useFirestoreCRUD("products");
   const { data: users, createDocument: createClient, updateDocument } = useFirestoreCRUD("clients");
   const { createDocument } = useFirestoreCRUD("orders");
   const [status, setStatus] = useState(null);
@@ -90,15 +90,35 @@ function App({ user }) {
   }
 
   function createOrder() {
+    debugger
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);
     }
 
-    // data.map(product => {
-    //   updateDocument(product.id, {stock: product["stock"] - product.qty})
-    // })
+    data.map(async product => {
+      debugger
+      //updateDocument(product.id, {stock: product["stock"] - product.qty})
+      if (!product.ingredients) {
+        await updateProducts(product.id, {
+          stock: product["stock"] - product.qty,
+        });
+      }
 
+      if (product.ingredients) {
+        debugger
+        const productToSubtract = products.find((p) => p.name == product.ingredients);
+        if (productToSubtract) {
+          debugger
+          const qtyToSubtract = product.subtract || 1;
+          await updateProducts(productToSubtract.id, {
+            stock: productToSubtract["stock"] - qtyToSubtract,
+          });
+        }
+      }
+    })
+
+  
     createDocument({
       name: client.name || "Sin nombre",
       products: data,
@@ -114,7 +134,7 @@ function App({ user }) {
   const filteredByCategory = formattedProducts?.filter((product) => !selectedCategory || product.item.category === selectedCategory);
 
   return (
-    <div style={{ padding: 16, maxWidth: 500, margin: "0 auto" }}>
+    <div style={{ padding: 16, maxWidth: 800, margin: "0 auto" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
         <Button disabled={status || !user} type="primary" onClick={() => setStatus("newOrder")}>
           Nueva orden

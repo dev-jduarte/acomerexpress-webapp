@@ -28,13 +28,23 @@ function Orders({ user }) {
     { label: "ZELLE", value: "ZELLE" },
     { label: "BINANCE", value: "BINANCE" },
     { label: "PUNTO DE VENTA", value: "PUNTODEVENTA" },
-    { label: "COFFEE LOVERS", value: "COFEELOVERS"}
+    { label: "COFFEE LOVERS", value: "COFEELOVERS" },
+    { label: "PROPINA", value: "PROPINA" },
   ];
+
+  // const filteredProductOptions = productOptions.filter((option) => {
+  //   const matchesCategory = selectedCategory ? option.item.category === selectedCategory : true;
+  //   const notAlreadyAdded = !editingOrder?.products.some((p) => p.id === option.item.id);
+  //   return matchesCategory && notAlreadyAdded;
+  // });
 
   const filteredProductOptions = productOptions.filter((option) => {
     const matchesCategory = selectedCategory ? option.item.category === selectedCategory : true;
     const notAlreadyAdded = !editingOrder?.products.some((p) => p.id === option.item.id);
-    return matchesCategory && notAlreadyAdded;
+    const matchesSearch = searchValue
+      ? option.label.toLowerCase().includes(searchValue.toLowerCase())
+      : true;
+    return matchesCategory && notAlreadyAdded && matchesSearch;
   });
 
   useEffect(() => {
@@ -125,13 +135,28 @@ function Orders({ user }) {
       seller: user,
     });
 
-    // await Promise.all(
-    //   editingOrder.products.map(async (product) => {
-    //     await updateProducts(editingOrder.id, {
-    //       stock: { stock: product["stock"] - product.qty },
-    //     });
-    //   })
-    // );
+    await Promise.all(
+      editingOrder.products.map(async (product) => {
+        debugger;
+        if (!product.ingredients) {
+          await updateProducts(product.id, {
+            stock: product["stock"] - product.qty,
+          });
+        }
+
+        if (product.ingredients) {
+          debugger;
+          const productToSubtract = products.find((p) => p.name == product.ingredients);
+          if (productToSubtract) {
+            debugger;
+            const qtyToSubtract = product.subtract || 1;
+            await updateProducts(productToSubtract.id, {
+              stock: productToSubtract["stock"] - qtyToSubtract,
+            });
+          }
+        }
+      })
+    );
 
     setEditingOrder(null);
     setSelectedPaymentMethods([]);
@@ -225,6 +250,11 @@ function Orders({ user }) {
             <Button type={!selectedCategory ? "primary" : "default"} onClick={() => setSelectedCategory(null)}>
               Todos
             </Button>
+          </div>
+
+          <div style={{ margin: "24px 0px" }}>
+            <div style={{ margin: "8px" }}>Buscar productos</div>
+            <Input placeholder="Buscar producto..." value={searchValue} onChange={(e) => setSearchValue(e.target.value)} style={{ marginBottom: 10 }} />
           </div>
 
           <Divider orientation="left">Productos disponibles</Divider>
@@ -351,7 +381,10 @@ function Orders({ user }) {
         okText="Confirmar"
         cancelText="Cancelar"
         okButtonProps={{
-          disabled: !orderToClose || Object.values(paymentAmounts).reduce((acc, curr) => acc + Number(curr || 0), 0) !== orderToClose.total,
+          disabled: !orderToClose ||
+            Object.entries(paymentAmounts)
+              .filter(([method]) => method !== "PROPINA")
+              .reduce((acc, [, amount]) => acc + Number(amount || 0), 0) !== orderToClose.total,
         }}
       >
         <p>¿Estás seguro de que deseas cerrar esta orden?</p>
