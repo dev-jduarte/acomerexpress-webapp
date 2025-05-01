@@ -1,7 +1,8 @@
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, getFirestore, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, getFirestore, query, where, connectFirestoreEmulator } from "firebase/firestore";
 import { app } from "../firebase.js";
 
 const db = getFirestore(app);
+// connectFirestoreEmulator(db, "127.0.0.1", 8080);
 const colRef = collection(db, "products");
 
 const fetchData = async (filters = {}) => {
@@ -30,7 +31,7 @@ const fetchData = async (filters = {}) => {
     const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     return items;
   } catch (err) {
-    console.log(err)
+    console.log(err);
     //setError(err.message);
     return null;
   } finally {
@@ -40,21 +41,34 @@ const fetchData = async (filters = {}) => {
 
 const updateDocument = async (id, updatedData) => {
   try {
-    const docRef = doc(db, collectionName, id);
+    const docRef = doc(db, "products", id);
     await updateDoc(docRef, updatedData);
-    setData((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedData } : item)));
+    //setData((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedData } : item)));
   } catch (err) {
-    setError(err.message);
+    console.log(err);
+    //setError(err.message);
   }
 };
 
 (async () => {
   const products = await fetchData();
-  // await Promise.all(
-  //   products.map(product => {
-  //       product["stock"] = 100
-  //   })
-  // )
-  console.log(products)
-  return products
+  let productsToChange = products.filter((product) => product.ingredients);
+  productsToChange.map((p) => {
+    const foundProduct = products.find((i) => i.name == p.ingredients);
+    if (foundProduct) {
+      updateDocument(foundProduct.id, { showAsIngredient: true, showInMenu: true, ...foundProduct });
+      p.ingredients = [{ id: foundProduct.id, name: foundProduct.name, qty: p.subtract || 1 }];
+    } else {
+      p.ingredients = [];
+    }
+  });
+  await Promise.all(
+    productsToChange.map(async (p) => {
+      try {
+        await updateDocument(p.id, p);
+      } catch (error) {
+        console.log(error);
+      }
+    })
+  );
 })();

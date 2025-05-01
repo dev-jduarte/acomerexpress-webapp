@@ -77,7 +77,7 @@ function Orders({ user }) {
   useEffect(() => {
     if (products) {
       const options = products
-        .filter((p) => p.price > 0)
+        .filter((p) => p.price > 0 && p.showInMenu !== false)
         .map((p) => ({
           value: p.id,
           label: p.name,
@@ -160,26 +160,27 @@ function Orders({ user }) {
       })),
       notes: editingOrder?.notes || "",
     });
-
     await Promise.all(
       editingOrder.products.map(async (product) => {
-        if (!product.ingredients) {
+        if (!product.ingredients || product?.ingredients?.length == 0) {
           await updateProducts(product.id, {
             stock: product["stock"] - product.qty,
           });
-        }
-
-        if (product.ingredients) {
-          const productToSubtract = products.find((p) => p.name == product.ingredients);
-          if (productToSubtract) {
-            const qtyToSubtract = product.subtract || 1;
-            await updateProducts(productToSubtract.id, {
-              stock: productToSubtract["stock"] - qtyToSubtract,
-            });
-          }
+        } else {
+          await Promise.all(
+            product?.ingredients?.map(async ingredient => {
+              debugger
+              const productToRemove = products.find(p => p.id == ingredient.id)
+              await updateProducts(ingredient.id, {stock: productToRemove.stock - ingredient.qty})
+            })
+          )
         }
       })
     );
+
+    await refetch({ status: "open" }).then((res) => {
+      setDisplayData(res);
+    });
 
     setEditingOrder(null);
     setSelectedPaymentMethods([]);
@@ -204,7 +205,9 @@ function Orders({ user }) {
       date: moment().format(),
       seller: user,
     });
-    await refetch({ status: "open" });
+    await refetch({ status: "open" }).then((res) => {
+      setDisplayData(res);
+    });
 
     setIsClosingModalVisible(false);
     setOrderToClose(null);

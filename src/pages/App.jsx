@@ -9,6 +9,7 @@ import { Select, Modal, Input, Typography } from "antd";
 import { message, App as AntdApp } from 'antd';
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import moment from "moment";
+import InventorySummary from "./InventorySummary";
 
 const { Title } = Typography;
 
@@ -122,6 +123,9 @@ function App() {
               {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/cierreCaja">
                 Cierre caja
               </Link>}
+              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/inventory-summary">
+                Inventario
+              </Link>}
             </nav>
 
             <Routes>
@@ -130,6 +134,7 @@ function App() {
               <Route path="/ordenes-cerradas" element={<ClosedOrders />} />
               {selectedUser && selectedUser == 'CAJA' && <Route path="/productos" element={<Products />} />}
               {selectedUser && selectedUser == 'CAJA' && <Route path="/cierreCaja" element={<CloseDay />} />}
+              {selectedUser && selectedUser == 'CAJA' && <Route path="/inventory-summary" element={<InventorySummary />} />}
             </Routes>
           </>
         )}

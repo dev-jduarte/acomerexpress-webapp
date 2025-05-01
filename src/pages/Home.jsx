@@ -59,7 +59,7 @@ function App({ user }) {
 
   function formatProducts() {
     let newData = products.map((product) => {
-      if (product.price && product.price > 0) {
+      if (product.price && product.price > 0 && product.showInMenu !== false) {
         return { value: product.id, label: product.name, item: product };
       }
     });
@@ -93,26 +93,27 @@ function App({ user }) {
   }
 
   function createOrder() {
+    debugger
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);
     }
 
     data.map(async (product) => {
-      if (!product.ingredients) {
+      debugger
+      if (!product.ingredients || product?.ingredients?.length == 0) {
+        debugger
         await updateProducts(product.id, {
           stock: product["stock"] - product.qty,
         });
       }
 
       if (product.ingredients) {
-        const productToSubtract = products.find((p) => p.name == product.ingredients);
-        if (productToSubtract) {
-          const qtyToSubtract = product.subtract || 1;
-          await updateProducts(productToSubtract.id, {
-            stock: productToSubtract["stock"] - qtyToSubtract,
-          });
-        }
+        await Promise.all(
+          product.ingredients.map(async ingredient => {
+            await updateProducts(ingredient.id, {stock: ingredient.stock - ingredient.qty})
+          })
+        )
       }
     });
 
