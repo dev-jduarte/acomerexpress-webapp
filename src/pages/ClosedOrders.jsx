@@ -27,7 +27,6 @@ function ClosedOrders() {
       refetch({ status: "closed" });
     }
   };
-  debugger
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 16 }}>
       <h2>Órdenes cerradas</h2>

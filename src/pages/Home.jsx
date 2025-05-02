@@ -93,16 +93,13 @@ function App({ user }) {
   }
 
   function createOrder() {
-    debugger
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);
     }
 
     data.map(async (product) => {
-      debugger
       if (!product.ingredients || product?.ingredients?.length == 0) {
-        debugger
         await updateProducts(product.id, {
           stock: product["stock"] - product.qty,
         });

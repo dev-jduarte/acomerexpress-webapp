@@ -169,7 +169,6 @@ function Orders({ user }) {
         } else {
           await Promise.all(
             product?.ingredients?.map(async ingredient => {
-              debugger
               const productToRemove = products.find(p => p.id == ingredient.id)
               await updateProducts(ingredient.id, {stock: productToRemove.stock - ingredient.qty})
             })
