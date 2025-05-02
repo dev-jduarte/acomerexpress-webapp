@@ -96,6 +96,8 @@ function App({ user }) {
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);
+    } else if (!existingClient.phone && client.phone) {
+      updateDocument(existingClient.id, { phone: client.phone });
     }
 
     data.map(async (product) => {
@@ -107,10 +109,10 @@ function App({ user }) {
 
       if (product.ingredients) {
         await Promise.all(
-          product.ingredients.map(async ingredient => {
-            await updateProducts(ingredient.id, {stock: ingredient.stock - ingredient.qty})
+          product.ingredients.map(async (ingredient) => {
+            await updateProducts(ingredient.id, { stock: ingredient.stock - ingredient.qty });
           })
-        )
+        );
       }
     });
 
@@ -128,7 +130,7 @@ function App({ user }) {
 
   let filteredByCategory = formattedProducts?.filter((product) => !selectedCategory || product.item.category === selectedCategory);
   if (selectedCategory == "COFFEE LOVERS") {
-    filteredByCategory = _.orderBy(filteredByCategory, (x) => x.item.subCategory)
+    filteredByCategory = _.orderBy(filteredByCategory, (x) => x.item.subCategory);
     filteredByCategory = _.groupBy(filteredByCategory, (x) => x.item.subCategory);
   }
   return (
@@ -265,68 +267,67 @@ function App({ user }) {
               </div>
             )}
 
-{selectedCategory === "COFFEE LOVERS" && (
-  <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-    {Object.keys(filteredByCategory).map((subcategory) => (
-      <div key={subcategory} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {/* Subcategoría como título */}
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: "bold",
-            marginBottom: 4,
-            padding: "4px 8px",
-            backgroundColor: "#f5f5f5",
-            borderRadius: 6,
-          }}
-        >
-          {subcategory}
-        </div>
+            {selectedCategory === "COFFEE LOVERS" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                {Object.keys(filteredByCategory).map((subcategory) => (
+                  <div key={subcategory} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Subcategoría como título */}
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: "bold",
+                        marginBottom: 4,
+                        padding: "4px 8px",
+                        backgroundColor: "#f5f5f5",
+                        borderRadius: 6,
+                      }}
+                    >
+                      {subcategory}
+                    </div>
 
-        {/* Lista de productos */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-          {filteredByCategory[subcategory].map((product) => (
-            <Button
-              key={product.value}
-              style={{
-                flex: "1 1 calc(50% - 12px)",
-                minWidth: 120,
-                height: 80,
-                backgroundColor: getCategoryColor(product.item.category),
-                color: "#fff",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-                fontWeight: "bold",
-              }}
-              onClick={() => {
-                setData([...data, { qty: 1, ...product.item }]);
-                filterProducts(product.item.name);
-              }}
-            >
-              {categoryIcons[product.item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
-              <span
-                style={{
-                  marginTop: 8,
-                  textAlign: "center",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  width: "100%",
-                }}
-              >
-                {product.label}
-              </span>
-            </Button>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-)}
-
+                    {/* Lista de productos */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                      {filteredByCategory[subcategory].map((product) => (
+                        <Button
+                          key={product.value}
+                          style={{
+                            flex: "1 1 calc(50% - 12px)",
+                            minWidth: 120,
+                            height: 80,
+                            backgroundColor: getCategoryColor(product.item.category),
+                            color: "#fff",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 16,
+                            fontWeight: "bold",
+                          }}
+                          onClick={() => {
+                            setData([...data, { qty: 1, ...product.item }]);
+                            filterProducts(product.item.name);
+                          }}
+                        >
+                          {categoryIcons[product.item.category] || <FastfoodIcon style={{ fontSize: 24 }} />}
+                          <span
+                            style={{
+                              marginTop: 8,
+                              textAlign: "center",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              width: "100%",
+                            }}
+                          >
+                            {product.label}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Lista de productos seleccionados */}

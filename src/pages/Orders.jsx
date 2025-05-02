@@ -24,6 +24,8 @@ function Orders({ user }) {
   const [displayData, setDisplayData] = useState([]);
   const [selectedProductsByOrder, setSelectedProductsByOrder] = useState({});
   const [activeOrderId, setActiveOrderId] = useState(null);
+  const [isPendingModalVisible, setIsPendingModalVisible] = useState(false);
+  const [orderToEdit, setOrderToEdit] = useState(null)
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -56,15 +58,13 @@ function Orders({ user }) {
       if (!activeOrderId || activeOrderId === orderId) {
         const currentSelection = prev[orderId] || [];
         const alreadySelected = currentSelection.includes(productIndex);
-        const updatedSelection = alreadySelected
-          ? currentSelection.filter((i) => i !== productIndex)
-          : [...currentSelection, productIndex];
-  
+        const updatedSelection = alreadySelected ? currentSelection.filter((i) => i !== productIndex) : [...currentSelection, productIndex];
+
         // Si se deseleccionó el último producto, también se borra el `activeOrderId`
         const isNowEmpty = updatedSelection.length === 0;
         if (isNowEmpty) setActiveOrderId(null);
         else setActiveOrderId(orderId);
-  
+
         return { [orderId]: updatedSelection };
       } else {
         // Mostrar una advertencia o simplemente ignorar
@@ -168,11 +168,11 @@ function Orders({ user }) {
           });
         } else {
           await Promise.all(
-            product?.ingredients?.map(async ingredient => {
-              const productToRemove = products.find(p => p.id == ingredient.id)
-              await updateProducts(ingredient.id, {stock: productToRemove.stock - ingredient.qty})
+            product?.ingredients?.map(async (ingredient) => {
+              const productToRemove = products.find((p) => p.id == ingredient.id);
+              await updateProducts(ingredient.id, { stock: productToRemove.stock - ingredient.qty });
             })
-          )
+          );
         }
       })
     );
@@ -446,17 +446,28 @@ function Orders({ user }) {
                       <div>
                         <strong>Vendedor: {item.seller}</strong>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "end", width: "100%", gap: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: 8, marginTop: 8 }}>
                         <Button type="primary" onClick={() => setEditingOrder(item)}>
                           Editar Orden
                         </Button>
                         <Button danger onClick={() => showCloseOrderModal(item)}>
                           Cerrar orden
                         </Button>
+                        {user == "CAJA" && <Button type="dashed" onClick={() => {
+                          setOrderToEdit(item)
+                          setIsPendingModalVisible(true)
+                        }}>
+                          Colocar Pendiente
+                        </Button>}
                         {user == "CAJA" && (
-                          <Ticket cliente={item.name} pedido={displayData.flatMap((order) =>
-                            (selectedProductsByOrder[order.id] || []).map((idx) => order.products[idx])
-                          )} total={item.total} mesonero={item.seller} zona={item.location} notes={item.notes} />
+                          <Ticket
+                            cliente={item.name}
+                            pedido={displayData.flatMap((order) => (selectedProductsByOrder[order.id] || []).map((idx) => order.products[idx]))}
+                            total={item.total}
+                            mesonero={item.seller}
+                            zona={item.location}
+                            notes={item.notes}
+                          />
                         )}
                       </div>
                     </List.Item>
@@ -521,6 +532,26 @@ function Orders({ user }) {
             </p>
           </>
         )}
+      </Modal>
+
+      <Modal
+        title="¿Marcar orden como pendiente?"
+        open={isPendingModalVisible}
+        onOk={async () => {
+          debugger
+          await updateDocument(orderToEdit.id, { status: "pending" });
+          await refetch({ status: "open" }).then((res) => setDisplayData(res));
+          setIsPendingModalVisible(false);
+          setOrderToEdit(null);
+          message.success("Orden marcada como pendiente");
+        }}
+        onCancel={() => setIsPendingModalVisible(false)}
+        okText="Sí, marcar como pendiente"
+        cancelText="Cancelar"
+      >
+        <p>
+          ¿Estás seguro de que deseas marcar esta orden como <strong>pendiente</strong>?
+        </p>
       </Modal>
     </div>
   );

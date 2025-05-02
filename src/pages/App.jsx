@@ -10,6 +10,7 @@ import { message, App as AntdApp } from 'antd';
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import moment from "moment";
 import InventorySummary from "./InventorySummary";
+import PendingOrders from "./PendingOrders";
 
 const { Title } = Typography;
 
@@ -85,7 +86,7 @@ function App() {
           padding: 32,
           borderRadius: 12,
           width: "100%",
-          maxWidth: 700,
+          maxWidth: selectedUser == "CAJA" ? 1000 : 700,
         }}
       >
         <Title level={3} style={{ textAlign: "center", marginBottom: 24 }}>
@@ -114,16 +115,19 @@ function App() {
               <Link style={linkStyle} to="/ordenes">
                 Órdenes abiertas
               </Link>
-              <Link style={linkStyle} to="/ordenes-cerradas">
+              <Link style={linkStyle} to="/ordenesCerradas">
                 Órdenes cerradas
               </Link>
+              {selectedUser && selectedUser == "CAJA" && <Link style={linkStyle} to="/ordenesPendientes">
+                Órdenes Pendientes
+              </Link>}
               {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/productos">
                 Productos
               </Link>}
               {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/cierreCaja">
                 Cierre caja
               </Link>}
-              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/inventory-summary">
+              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/resumenInventario">
                 Inventario
               </Link>}
             </nav>
@@ -131,10 +135,11 @@ function App() {
             <Routes>
               <Route path="/" element={<Home user={selectedUser} />} />
               <Route path="/ordenes" element={<Orders user={selectedUser} />} />
-              <Route path="/ordenes-cerradas" element={<ClosedOrders />} />
-              {selectedUser && selectedUser == 'CAJA' && <Route path="/productos" element={<Products />} />}
-              {selectedUser && selectedUser == 'CAJA' && <Route path="/cierreCaja" element={<CloseDay />} />}
-              {selectedUser && selectedUser == 'CAJA' && <Route path="/inventory-summary" element={<InventorySummary />} />}
+              <Route path="/ordenesCerradas" element={<ClosedOrders user={selectedUser} />} />
+              <Route path="/ordenesPendientes" element={<PendingOrders user={selectedUser} />} />
+              {selectedUser && selectedUser == 'CAJA' && <Route path="/productos" element={<Products user={selectedUser} />} />}
+              {selectedUser && selectedUser == 'CAJA' && <Route path="/cierreCaja" element={<CloseDay user={selectedUser} />} />}
+              {selectedUser && selectedUser == 'CAJA' && <Route path="/resumenInventario" element={<InventorySummary user={selectedUser} />} />}
             </Routes>
           </>
         )}

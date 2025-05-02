@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { List, Divider, Collapse, DatePicker, Space, Row, Col, Input, Typography } from "antd";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-function CloseDay() {
+function CloseDay({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
   const [dateRange, setDateRange] = useState(null);
 
@@ -22,6 +23,7 @@ function CloseDay() {
 
   const [paymentData, setPaymentData] = useState(initialPaymentState);
   const [userPaymentData, setUserPaymentData] = useState(initialPaymentState);
+  const navigate = useNavigate();
 
   const handleDateRangeChange = async (dates) => {
     setDateRange(dates);
@@ -44,8 +46,7 @@ function CloseDay() {
       });
 
       setPaymentData(payData);
-      //setUserPaymentData(payData); 
-
+      //setUserPaymentData(payData);
     } else {
       refetch({ status: "closed" });
     }
@@ -64,8 +65,14 @@ function CloseDay() {
   const totalFinal = totalUser;
   const totalDifference = totalFinal - totalSystem;
 
+  useEffect(() => {
+    if (user != "CAJA") {
+      navigate("/");
+    }
+  });
+
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: 16 }}>
+    <div style={{ maxWidth: 800, margin: "0 auto", padding: 16 }}>
       <Title level={2}>Cierre de caja</Title>
 
       <Space direction="vertical" style={{ marginBottom: 16, width: "100%" }}>
@@ -73,9 +80,15 @@ function CloseDay() {
       </Space>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 32 }}>
-        <Col span={8}><Text strong>Método</Text></Col>
-        <Col span={6}><Text strong>Sistema</Text></Col>
-        <Col span={5}><Text strong>Usuario</Text></Col>
+        <Col span={8}>
+          <Text strong>Método</Text>
+        </Col>
+        <Col span={6}>
+          <Text strong>Sistema</Text>
+        </Col>
+        <Col span={5}>
+          <Text strong>Usuario</Text>
+        </Col>
       </Row>
 
       {Object.keys(paymentData).map((key) => {
@@ -91,13 +104,7 @@ function CloseDay() {
               <Input value={systemValue.toFixed(2)} disabled style={{ textAlign: "right" }} suffix="Bs/$" />
             </Col>
             <Col span={5}>
-              <Input
-                type="number"
-                value={userValue}
-                onChange={(e) => handleUserPaymentChange(key, e.target.value)}
-                style={{ textAlign: "right" }}
-                suffix="Bs/$"
-              />
+              <Input type="number" value={userValue} onChange={(e) => handleUserPaymentChange(key, e.target.value)} style={{ textAlign: "right" }} suffix="Bs/$" />
             </Col>
           </Row>
         );
@@ -107,12 +114,13 @@ function CloseDay() {
 
       <div style={{ textAlign: "center", marginTop: 16 }}>
         <Title level={4}>Totales</Title>
-        <Text strong>Sistema: {totalSystem.toFixed(2)}</Text><br />
-        <Text strong>Usuario: {totalUser.toFixed(2)}</Text><br />
-        <Text strong>Total Final: {totalFinal.toFixed(2)}</Text><br />
-        <Text type={totalDifference === 0 ? "success" : "danger"}>
-          Diferencia global: {totalDifference.toFixed(2)}
-        </Text>
+        <Text strong>Sistema: {totalSystem.toFixed(2)}</Text>
+        <br />
+        <Text strong>Usuario: {totalUser.toFixed(2)}</Text>
+        <br />
+        <Text strong>Total Final: {totalFinal.toFixed(2)}</Text>
+        <br />
+        <Text type={totalDifference === 0 ? "success" : "danger"}>Diferencia global: {totalDifference.toFixed(2)}</Text>
       </div>
     </div>
   );

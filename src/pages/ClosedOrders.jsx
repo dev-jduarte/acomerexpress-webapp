@@ -2,16 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { List, Divider, Collapse, DatePicker, Space } from "antd";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 const { Panel } = Collapse;
 const { RangePicker } = DatePicker;
 
-function ClosedOrders() {
+function ClosedOrders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
   const { data: products } = useFirestoreCRUD("products");
   const [displayData, setDisplayData] = useState(orders);
+  const navigate = useNavigate();
 
   const [dateRange, setDateRange] = useState(null); // [moment, moment]
+
 
   const handleDateRangeChange = (dates) => {
     setDateRange(dates);
@@ -28,7 +31,7 @@ function ClosedOrders() {
     }
   };
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: 16 }}>
+    <div style={{ maxWidth: 800, margin: "0 auto", padding: 16 }}>
       <h2>Órdenes cerradas</h2>
 
       <Space direction="vertical" style={{ marginBottom: 16, width: "100%" }}>

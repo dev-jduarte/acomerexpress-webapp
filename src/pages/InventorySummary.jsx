@@ -1,13 +1,15 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { List, Card, Typography, Divider } from "antd";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 const InventorySummary = ({user}) => {
   const { data: repositions } = useFirestoreCRUD("inventoryReposition");
   const { data: products } = useFirestoreCRUD("products");
+  const navigate = useNavigate()
 
   const totalValue = useMemo(() => {
     if (!products) return 0;
@@ -16,8 +18,14 @@ const InventorySummary = ({user}) => {
       .reduce((sum, p) => sum + (p.price || 0) * (p.stock || 0), 0);
   }, [products]);
 
+  useEffect(() => {
+    if (user != "CAJA") {
+      navigate("/")
+    }
+  })
+
   return (
-    <div style={user == 'CAJA' ? { padding: 24, width: "100%", margin: "0 auto" } : { padding: 24, maxWidth: 1000, margin: "0 auto" }}>
+    <div style={user == 'CAJA' ? { padding: 24, width: "100%", margin: "0 auto" } : { padding: 24, maxWidth: 800, margin: "0 auto" }}>
       <Title level={3}>Resumen de Inventario</Title>
 
       <Card style={{ marginBottom: 24 }}>

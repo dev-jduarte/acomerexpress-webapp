@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button, Modal, Form, Input, InputNumber, Select, List, Checkbox, Space, Row, Col, Collapse, Tag } from "antd";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { categories } from "../utils/categories";
 import { message, App as AntdApp } from "antd";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
 const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
-const Products = () => {
+const Products = ({user}) => {
   const { Panel } = Collapse;
 
   const { data: products, createDocument, updateDocument, deleteDocument, refetch } = useFirestoreCRUD("products");
@@ -27,6 +28,14 @@ const Products = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [productQtyMap, setProductQtyMap] = useState({});
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+      if (user != "CAJA") {
+        navigate("/")
+      }
+    })
 
   const selectedProducts = useMemo(() => {
     return selectedProductIds
