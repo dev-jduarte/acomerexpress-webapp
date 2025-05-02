@@ -27,7 +27,7 @@ function ClosedOrders() {
       refetch({ status: "closed" });
     }
   };
-
+  debugger
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: 16 }}>
       <h2>Órdenes cerradas</h2>
@@ -56,6 +56,13 @@ function ClosedOrders() {
                 {item.products.map((product, idx) => (
                   <div key={idx} style={{ marginBottom: 4 }}>
                     <strong>{product.name}</strong> - ${product.price} x {product.qty}
+                  </div>
+                ))}
+              </Panel>
+              <Panel header="Metodos de pago" key="2">
+                {item.payments.map((payment, idx) => (
+                  <div key={idx} style={{ marginBottom: 4 }}>
+                    <strong>{payment.method}:</strong> ${payment.amount}
                   </div>
                 ))}
               </Panel>
