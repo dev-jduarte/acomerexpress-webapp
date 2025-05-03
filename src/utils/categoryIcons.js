@@ -20,5 +20,6 @@ export const categoryIcons = {
   "ARABIC FOOD": { icon: KebabDiningIcon, color: "#8D6E63" }, // marrón claro
   "HOT DOGS": { icon: FastfoodIcon, color: "#FFC107" }, // amarillo
   EXTRAS: { icon: AddCircleIcon, color: "#607D8B" }, // gris
-  "COFFEE LOVERS": {icon: CoffeeIcon, color: "#795548"}
+  "COFFEE LOVERS": {icon: CoffeeIcon, color: "#795548"},
+  "DESAYUNOS": { icon: LunchDiningIcon, color: "#4CAF50" }
 };
