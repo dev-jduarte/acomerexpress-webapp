@@ -12,6 +12,7 @@ import Ticket from "../components/Ticket";
 function Orders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
   const { data: products, updateDocument: updateProducts } = useFirestoreCRUD("products");
+  const { data: clients } = useFirestoreCRUD("clients");
 
   const [editingOrder, setEditingOrder] = useState(null);
   const [productOptions, setProductOptions] = useState([]);
@@ -25,7 +26,7 @@ function Orders({ user }) {
   const [selectedProductsByOrder, setSelectedProductsByOrder] = useState({});
   const [activeOrderId, setActiveOrderId] = useState(null);
   const [isPendingModalVisible, setIsPendingModalVisible] = useState(false);
-  const [orderToEdit, setOrderToEdit] = useState(null)
+  const [orderToEdit, setOrderToEdit] = useState(null);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -36,7 +37,6 @@ function Orders({ user }) {
     { label: "ZELLE", value: "ZELLE" },
     { label: "BINANCE", value: "BINANCE" },
     { label: "PUNTO DE VENTA", value: "PUNTODEVENTA" },
-    { label: "COFFEE LOVERS", value: "COFFEELOVERS" },
     { label: "PROPINA", value: "PROPINA" },
   ];
 
@@ -432,6 +432,7 @@ function Orders({ user }) {
                   return (
                     <List.Item key={item.id}>
                       <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
+                      <List.Item.Meta description={`CI: ${(clients.find(c => c.name.toLowerCase() == item.name.toLowerCase())?.dni || "")}`} />
                       {item.notes && <List.Item.Meta title={"Nota"} description={item.notes} />}
                       {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
                       <Divider style={{ margin: "8px 0" }} />
@@ -453,12 +454,17 @@ function Orders({ user }) {
                         <Button danger onClick={() => showCloseOrderModal(item)}>
                           Cerrar orden
                         </Button>
-                        {user == "CAJA" && <Button type="dashed" onClick={() => {
-                          setOrderToEdit(item)
-                          setIsPendingModalVisible(true)
-                        }}>
-                          Colocar Pendiente
-                        </Button>}
+                        {user == "CAJA" && (
+                          <Button
+                            type="dashed"
+                            onClick={() => {
+                              setOrderToEdit(item);
+                              setIsPendingModalVisible(true);
+                            }}
+                          >
+                            Colocar Pendiente
+                          </Button>
+                        )}
                         {user == "CAJA" && (
                           <Ticket
                             cliente={item.name}
@@ -538,7 +544,7 @@ function Orders({ user }) {
         title="¿Marcar orden como pendiente?"
         open={isPendingModalVisible}
         onOk={async () => {
-          debugger
+          debugger;
           await updateDocument(orderToEdit.id, { status: "pending" });
           await refetch({ status: "open" }).then((res) => setDisplayData(res));
           setIsPendingModalVisible(false);

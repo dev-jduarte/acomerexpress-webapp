@@ -61,6 +61,12 @@ const PendingOrders = () => {
       key: "name",
     },
     {
+      title: "Teléfono",
+      dataIndex: "phone",
+      key: "phone",
+      render: (val) => <div>{val || "N/A"}</div>
+    },
+    {
       title: "Productos",
       dataIndex: "products",
       key: "products",
