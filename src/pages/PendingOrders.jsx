@@ -71,7 +71,7 @@ const PendingOrders = () => {
       title: "CI",
       dataIndex: "dni",
       key: "dni",
-      render: (value, record) => <div>{value || getClientDni(record)}</div>
+      render: (value, record) => <div>{value || getClientDni(record) || "N/A"}</div>
     },
     {
       title: "Teléfono",
