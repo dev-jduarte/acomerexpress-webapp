@@ -118,6 +118,8 @@ function App({ user }) {
 
     createDocument({
       name: client.name || "Sin nombre",
+      dni: client.dni,
+      phone: client.phone,
       products: data,
       total: data.reduce((acc, curr) => acc + (curr.qty * curr.price || 0), 0),
       date: moment().format(),

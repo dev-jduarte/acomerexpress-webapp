@@ -432,7 +432,7 @@ function Orders({ user }) {
                   return (
                     <List.Item key={item.id}>
                       <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
-                      <List.Item.Meta description={`CI: ${(clients.find(c => c.name.toLowerCase() == item.name.toLowerCase())?.dni || "")}`} />
+                      <List.Item.Meta description={`CI: ${item.dni || ""}`} />
                       {item.notes && <List.Item.Meta title={"Nota"} description={item.notes} />}
                       {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
                       <Divider style={{ margin: "8px 0" }} />
