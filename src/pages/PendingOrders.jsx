@@ -14,6 +14,8 @@ const PendingOrders = () => {
     updateDocument,
   } = useFirestoreCRUD("orders", false); // desactivamos fetch inicial
 
+  const {data: clients} = useFirestoreCRUD("clients");
+
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -21,6 +23,11 @@ const PendingOrders = () => {
   useEffect(() => {
     refetch({ status: "pending" });
   }, []);
+
+  const getClientDni = (record) => {
+    const client = clients.find(c => c.name?.toLowerCase() == record.name?.toLowerCase())
+    return client?.dni
+  }
 
   const showCloseModal = (orderId) => {
     setSelectedOrderId(orderId);
@@ -59,6 +66,12 @@ const PendingOrders = () => {
       title: "Cliente",
       dataIndex: "name",
       key: "name",
+    },
+    {
+      title: "CI",
+      dataIndex: "dni",
+      key: "dni",
+      render: (value, record) => <div>{value || getClientDni(record)}</div>
     },
     {
       title: "Teléfono",

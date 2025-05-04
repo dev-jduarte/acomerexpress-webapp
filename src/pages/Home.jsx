@@ -127,6 +127,7 @@ function App({ user }) {
       location: selectedZone,
       notes,
       seller: user,
+      clientId: existingClient.id
     });
   }
 
