@@ -18,11 +18,11 @@ function CloseDay({ user }) {
     ZELLE: 0,
     BINANCE: 0,
     PUNTODEVENTA: 0,
-    //COFFEELOVERS: 0,
   };
 
   const [paymentData, setPaymentData] = useState(initialPaymentState);
   const [userPaymentData, setUserPaymentData] = useState(initialPaymentState);
+  const [coffeeLoversData, setCoffeeLoversData] = useState(0);
   const navigate = useNavigate();
 
   const handleDateRangeChange = async (dates) => {
@@ -37,16 +37,20 @@ function CloseDay({ user }) {
       });
 
       const payData = { ...initialPaymentState };
-
+      let coffeeLoversTotal = 0;
       orders.forEach((order) => {
+        order?.products?.map((product) => {
+          if (product.category == "COFFEE LOVERS") {
+            coffeeLoversTotal += product.price * product.qty;
+          }
+        });
         order?.payments?.forEach((payment) => {
           const key = payment.method;
           payData[key] = (payData[key] || 0) + payment.amount;
         });
       });
-
+      setCoffeeLoversData(coffeeLoversTotal);
       setPaymentData(payData);
-      //setUserPaymentData(payData);
     } else {
       refetch({ status: "closed" });
     }
@@ -109,6 +113,17 @@ function CloseDay({ user }) {
           </Row>
         );
       })}
+
+      <Divider />
+
+      <Row key={"COFFEE LOVERS"} gutter={[16, 16]} align="middle" style={{ marginBottom: 8 }}>
+        <Col span={8}>
+          <Text>{"TOTAL COFFEE LOVERS"}</Text>
+        </Col>
+        <Col span={6}>
+          <Input value={coffeeLoversData.toFixed(2)} disabled style={{ textAlign: "right" }} suffix="Bs/$" />
+        </Col>
+      </Row>
 
       <Divider />
 
