@@ -39,7 +39,7 @@ function CloseDay({ user }) {
       const payData = { ...initialPaymentState };
 
       orders.forEach((order) => {
-        order.payments.forEach((payment) => {
+        order?.payments?.forEach((payment) => {
           const key = payment.method;
           payData[key] = (payData[key] || 0) + payment.amount;
         });
