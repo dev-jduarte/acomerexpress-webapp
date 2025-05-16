@@ -93,7 +93,6 @@ function App({ user }) {
   }
 
   function createOrder() {
-    debugger
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);

@@ -544,7 +544,6 @@ function Orders({ user }) {
         title="¿Marcar orden como pendiente?"
         open={isPendingModalVisible}
         onOk={async () => {
-          debugger;
           await updateDocument(orderToEdit.id, { status: "pending" });
           await refetch({ status: "open" }).then((res) => setDisplayData(res));
           setIsPendingModalVisible(false);
