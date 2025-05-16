@@ -3,14 +3,16 @@ import { useState, useEffect } from "react";
 import Home from "./Home";
 import Orders from "./Orders";
 import ClosedOrders from "./ClosedOrders";
-import Products from "./Products"
-import CloseDay from "./CloseDay"
+import Products from "./Products";
+import CloseDay from "./CloseDay";
 import { Select, Modal, Input, Typography } from "antd";
-import { message, App as AntdApp } from 'antd';
+import { message, App as AntdApp } from "antd";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import moment from "moment";
 import InventorySummary from "./InventorySummary";
 import PendingOrders from "./PendingOrders";
+import { useFingerprint } from "../hooks/useFingerprint";
+import { allowedFingerprints } from "../utils/allowedFingerprints";
 
 const { Title } = Typography;
 
@@ -22,6 +24,19 @@ function App() {
   const { createDocument: saveChangeTurn } = useFirestoreCRUD("changeTurn", false);
   const [messageApi, contextHolder] = message.useMessage();
 
+  const fingerprint = useFingerprint();
+  const [accessAllowed, setAccessAllowed] = useState(null);
+
+  useEffect(() => {
+    console.log("Fingerprint: ", fingerprint)
+    // if (fingerprint) {
+    //   const allowed = allowedFingerprints.includes(fingerprint);
+    //   setAccessAllowed(allowed);
+    //   if (!allowed) {
+    //     messageApi.error("Este dispositivo no está autorizado.");
+    //   }
+    // }
+  }, [fingerprint]);
 
   const userOptions = [
     { label: "Usuario 001", value: "USUARIO001" },
@@ -36,7 +51,7 @@ function App() {
     USUARIO002: import.meta.env.VITE_USER002_PASSWORD,
     CAJA: import.meta.env.VITE_CAJA_PASSWORD,
     APOYO001: import.meta.env.VITE_APOYO001_PASSWORD,
-    APOYO002: import.meta.env.VITE_APOYO002_PASSWORD
+    APOYO002: import.meta.env.VITE_APOYO002_PASSWORD,
   };
 
   const handleUserSelect = (value) => {
@@ -45,7 +60,7 @@ function App() {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('selectedUser');
+    const storedUser = localStorage.getItem("selectedUser");
     if (storedUser) {
       setSelectedUser(storedUser);
     }
@@ -58,8 +73,7 @@ function App() {
       setIsModalVisible(false);
       setPasswordInput("");
       saveChangeTurn({ date: moment().format(), pendingUser });
-      localStorage.setItem('selectedUser', pendingUser);
-
+      localStorage.setItem("selectedUser", pendingUser);
     } else {
       messageApi.error("Clave incorrecta");
     }
@@ -69,6 +83,19 @@ function App() {
     setIsModalVisible(false);
     setPasswordInput("");
   };
+
+  // if (accessAllowed === false) {
+  //   return (
+  //     <div style={{ padding: 32, textAlign: "center" }}>
+  //       <Title level={4}>Acceso denegado</Title>
+  //       <p>Este dispositivo no está autorizado para usar esta aplicación.</p>
+  //     </div>
+  //   );
+  // }
+
+  // if (accessAllowed === null) {
+  //   return <div>Cargando...</div>; // mientras se obtiene el fingerprint
+  // }
 
   return (
     <div
@@ -118,18 +145,26 @@ function App() {
               <Link style={linkStyle} to="/ordenesCerradas">
                 Órdenes cerradas
               </Link>
-              {selectedUser && selectedUser == "CAJA" && <Link style={linkStyle} to="/ordenesPendientes">
-                Órdenes Pendientes
-              </Link>}
-              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/productos">
-                Productos
-              </Link>}
-              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/cierreCaja">
-                Cierre caja
-              </Link>}
-              {selectedUser && selectedUser == 'CAJA' && <Link style={linkStyle} to="/resumenInventario">
-                Inventario
-              </Link>}
+              {selectedUser && selectedUser == "CAJA" && (
+                <Link style={linkStyle} to="/ordenesPendientes">
+                  Órdenes Pendientes
+                </Link>
+              )}
+              {selectedUser && selectedUser == "CAJA" && (
+                <Link style={linkStyle} to="/productos">
+                  Productos
+                </Link>
+              )}
+              {selectedUser && selectedUser == "CAJA" && (
+                <Link style={linkStyle} to="/cierreCaja">
+                  Cierre caja
+                </Link>
+              )}
+              {selectedUser && selectedUser == "CAJA" && (
+                <Link style={linkStyle} to="/resumenInventario">
+                  Inventario
+                </Link>
+              )}
             </nav>
 
             <Routes>
@@ -137,9 +172,9 @@ function App() {
               <Route path="/ordenes" element={<Orders user={selectedUser} />} />
               <Route path="/ordenesCerradas" element={<ClosedOrders user={selectedUser} />} />
               <Route path="/ordenesPendientes" element={<PendingOrders user={selectedUser} />} />
-              {selectedUser && selectedUser == 'CAJA' && <Route path="/productos" element={<Products user={selectedUser} />} />}
-              {selectedUser && selectedUser == 'CAJA' && <Route path="/cierreCaja" element={<CloseDay user={selectedUser} />} />}
-              {selectedUser && selectedUser == 'CAJA' && <Route path="/resumenInventario" element={<InventorySummary user={selectedUser} />} />}
+              {selectedUser && selectedUser == "CAJA" && <Route path="/productos" element={<Products user={selectedUser} />} />}
+              {selectedUser && selectedUser == "CAJA" && <Route path="/cierreCaja" element={<CloseDay user={selectedUser} />} />}
+              {selectedUser && selectedUser == "CAJA" && <Route path="/resumenInventario" element={<InventorySummary user={selectedUser} />} />}
             </Routes>
           </>
         )}
