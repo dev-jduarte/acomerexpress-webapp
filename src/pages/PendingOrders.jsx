@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Table, Typography, Tag, Card, Button, Modal, message } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { Table, Typography, Tag, Card, Button, Modal, message, Input, Divider } from "antd";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import moment from "moment";
 
 const { Title } = Typography;
+const { Search } = Input;
 
 const PendingOrders = () => {
   const {
@@ -14,20 +14,21 @@ const PendingOrders = () => {
     updateDocument,
   } = useFirestoreCRUD("orders", false); // desactivamos fetch inicial
 
-  const {data: clients} = useFirestoreCRUD("clients");
+  const { data: clients } = useFirestoreCRUD("clients");
 
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     refetch({ status: "pending" });
   }, []);
 
   const getClientDni = (record) => {
-    const client = clients.find(c => c.name?.toLowerCase() == record.name?.toLowerCase())
-    return client?.dni
-  }
+    const client = clients.find(c => c.name?.toLowerCase() === record.name?.toLowerCase());
+    return client?.dni;
+  };
 
   const showCloseModal = (orderId) => {
     setSelectedOrderId(orderId);
@@ -71,13 +72,13 @@ const PendingOrders = () => {
       title: "CI",
       dataIndex: "dni",
       key: "dni",
-      render: (value, record) => <div>{value || getClientDni(record) || "N/A"}</div>
+      render: (value, record) => <div>{value || getClientDni(record) || "N/A"}</div>,
     },
     {
       title: "Teléfono",
       dataIndex: "phone",
       key: "phone",
-      render: (val) => <div>{val || "N/A"}</div>
+      render: (val) => <div>{val || "N/A"}</div>,
     },
     {
       title: "Productos",
@@ -107,18 +108,48 @@ const PendingOrders = () => {
     },
   ];
 
+  // Agrupar órdenes por día
+  const groupedByDay = pendingOrders
+    .filter((order) => order.name?.toLowerCase().includes(searchText.toLowerCase()))
+    .reduce((acc, order) => {
+      const day = moment(order.date).format("YYYY-MM-DD");
+      if (!acc[day]) acc[day] = [];
+      acc[day].push({ ...order, key: order.id });
+      return acc;
+    }, {});
+
   return (
     <Card>
       <Title level={3}>Órdenes Pendientes</Title>
-      <Table
-        loading={loading}
-        dataSource={pendingOrders.map((order) => ({ ...order, key: order.id }))}
-        columns={columns}
-        pagination={{ pageSize: 5 }}
+
+      <Search
+        placeholder="Buscar por nombre de cliente"
+        onChange={(e) => setSearchText(e.target.value)}
+        value={searchText}
+        style={{ marginBottom: 20, maxWidth: 300 }}
+        allowClear
       />
 
+      {Object.keys(groupedByDay).length === 0 ? (
+        <p>No se encontraron órdenes pendientes.</p>
+      ) : (
+        Object.entries(groupedByDay).map(([day, orders]) => (
+          <div key={day}>
+            <Divider orientation="left">
+              <Title level={4}>{moment(day).format("DD/MM/YYYY")}</Title>
+            </Divider>
+            <Table
+              loading={loading}
+              dataSource={orders}
+              columns={columns}
+              pagination={false}
+            />
+          </div>
+        ))
+      )}
+
       <Modal
-        visible={isModalVisible}
+        open={isModalVisible}
         title="¿Cerrar esta orden?"
         onOk={handleConfirmClose}
         onCancel={handleCancel}

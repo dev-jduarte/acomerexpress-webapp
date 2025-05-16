@@ -93,6 +93,7 @@ function App({ user }) {
   }
 
   function createOrder() {
+    debugger
     const existingClient = users.find((i) => i.dni == client.dni);
     if (!existingClient) {
       createClient(client);
@@ -127,7 +128,7 @@ function App({ user }) {
       location: selectedZone,
       notes,
       seller: user,
-      clientId: existingClient.id
+      clientId: existingClient?.id || null
     });
   }
 
