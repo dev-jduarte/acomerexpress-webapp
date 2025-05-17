@@ -27,16 +27,16 @@ function App() {
   const fingerprint = useFingerprint();
   const [accessAllowed, setAccessAllowed] = useState(null);
 
-  useEffect(() => {
-    //console.log("Fingerprint: ", fingerprint)
-    if (fingerprint) {
-      const allowed = allowedFingerprints.includes(fingerprint);
-      setAccessAllowed(allowed);
-      if (!allowed) {
-        messageApi.error("Este dispositivo no está autorizado.");
-      }
-    }
-  }, [fingerprint]);
+  // useEffect(() => {
+  //   //console.log("Fingerprint: ", fingerprint)
+  //   if (fingerprint) {
+  //     const allowed = allowedFingerprints.includes(fingerprint);
+  //     setAccessAllowed(allowed);
+  //     if (!allowed) {
+  //       messageApi.error("Este dispositivo no está autorizado.");
+  //     }
+  //   }
+  // }, [fingerprint]);
 
   const userOptions = [
     { label: "Usuario 001", value: "USUARIO001" },
@@ -84,18 +84,18 @@ function App() {
     setPasswordInput("");
   };
 
-  if (accessAllowed === false) {
-    return (
-      <div style={{ padding: 32, textAlign: "center" }}>
-        <Title level={4}>Acceso denegado</Title>
-        <p>Este dispositivo no está autorizado para usar esta aplicación.</p>
-      </div>
-    );
-  }
+  // if (accessAllowed === false) {
+  //   return (
+  //     <div style={{ padding: 32, textAlign: "center" }}>
+  //       <Title level={4}>Acceso denegado</Title>
+  //       <p>Este dispositivo no está autorizado para usar esta aplicación.</p>
+  //     </div>
+  //   );
+  // }
 
-  if (accessAllowed === null) {
-    return <div>Cargando...</div>; // mientras se obtiene el fingerprint
-  }
+  // if (accessAllowed === null) {
+  //   return <div>Cargando...</div>; // mientras se obtiene el fingerprint
+  // }
 
   return (
     <div
