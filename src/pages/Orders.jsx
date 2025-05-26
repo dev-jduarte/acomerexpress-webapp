@@ -89,7 +89,10 @@ function Orders({ user }) {
 
   useEffect(() => {
     refetch({ status: "open" })
-      .then((res) => setDisplayData(res))
+      .then((res) => {
+        const data = _.orderBy(res, res?.date, "desc")
+        setDisplayData(data)
+      })
       .catch((err) => {
         console.log(err);
         setDisplayData([]);
