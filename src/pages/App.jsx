@@ -44,6 +44,22 @@ function App() {
     { label: "CAJA", value: "CAJA" },
     { label: "APOYO 001", value: "APOYO001" },
     { label: "APOYO 002", value: "APOYO002" },
+    { label: "Veronica Viñola", value: "VERONICAVINOLA" },
+    { label: "José Sanchez", value: "JOSESANCHEZ" },
+    { label: "Edgarlys Díaz", value: "EDGARLYSDIAZ" },
+    { label: "Frank Velásquez", value: "FRANKVELASQUEZ" },
+    { label: "Jorge Lizano", value: "JORGELIZANO" },
+    { label: "Astrid Caramo", value: "ASTRICARAMO" },
+    { label: "Jordalis López", value: "JORDALISLOPEZ" },
+    { label: "Marcos Villarroel", value: "MARCOSVILLARROEL" },
+    { label: "Karla Aponte", value: "KARLAAPONTE" },
+    { label: "Juan Mota", value: "JUANMOTA" },
+    { label: "Eliecer Monserratt", value: "ELIECERMONSERRAT" },
+    { label: "José Romero", value: "JOSEROMERO" },
+    { label: "José Souki", value: "JOSESOUKI" },
+    { label: "Vanesa González", value: "VANESAGONZALEZ" },
+    { label: "Ricardo Guerra", value: "RICARDOGUERRA" },
+    { label: "Vivian Makarem", value: "VIVIANMAKAREM" },
   ];
 
   const userPasswords = {
@@ -52,6 +68,22 @@ function App() {
     CAJA: import.meta.env.VITE_CAJA_PASSWORD,
     APOYO001: import.meta.env.VITE_APOYO001_PASSWORD,
     APOYO002: import.meta.env.VITE_APOYO002_PASSWORD,
+    VERONICAVINOLA: import.meta.env.VITE_VERONICAVINOLA_PASSWORD,
+    JOSESANCHEZ: import.meta.env.VITE_JOSESANCHEZ_PASSWORD,
+    EDGARLYSDIAZ: import.meta.env.VITE_EDGARLYSDIAZ_PASSWORD,
+    FRANKVELASQUEZ: import.meta.env.VITE_FRANKVELASQUEZ_PASSWORD,
+    JORGELIZANO: import.meta.env.VITE_JORGELIZANO_PASSWORD,
+    ASTRIDCARAMO: import.meta.env.VITE_ASTRIDCARAMO_PASSWORD,
+    JORDALISLOPEZ: import.meta.env.VITE_JORDALISLOPEZ_PASSWORD,
+    MARCOSVILLARROEL: import.meta.env.VITE_MARCOSVILLARROEL_PASSWORD,
+    KARLAAPONTE: import.meta.env.VITE_KARLAAPONTE_PASSWORD,
+    JUANMOTA: import.meta.env.VITE_JUANMOTA_PASSWORD,
+    ELIECERMONSERRATT: import.meta.env.VITE_ELIECERMONSERRATT_PASSWORD,
+    JOSEROMERO: import.meta.env.VITE_JOSEROMERO_PASSWORD,
+    JOSESOUKI: import.meta.env.VITE_ACOMER_PASSWORD,
+    VANESAGONZALEZ: import.meta.env.VITE_ACOMER_PASSWORD,
+    RICARDOGUERRA: import.meta.env.VITE_ACOMER_PASSWORD,
+    VIVIANMAKAREM: import.meta.env.VITE_ACOMER_PASSWORD
   };
 
   const handleUserSelect = (value) => {
