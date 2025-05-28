@@ -15,6 +15,7 @@ import getCategoryColor from "../utils/getColorsByCategories";
 import TextArea from "antd/es/input/TextArea";
 import CoffeeIcon from "@mui/icons-material/Coffee";
 import _ from "lodash";
+import { zonesOptions } from "../utils/zonesOptions";
 
 function App({ user }) {
   const { data: products, updateDocument: updateProducts } = useFirestoreCRUD("products");
@@ -31,13 +32,6 @@ function App({ user }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
   const [notes, setNotes] = useState(null);
-
-  const zonesOptions = [
-    { label: "Zona A", value: "ZONEA" },
-    { label: "Zona B", value: "ZONEB" },
-    { label: "Zona C", value: "ZONEC" },
-    { label: "Terraza", value: "TERRAZA" },
-  ];
 
   const categoryIcons = {
     BEBIDAS: <LocalDrinkIcon style={{ fontSize: 24, marginTop: 5 }} />,
@@ -127,7 +121,7 @@ function App({ user }) {
       location: selectedZone,
       notes,
       seller: user,
-      clientId: existingClient?.id || null
+      clientId: existingClient?.id || null,
     });
   }
 
@@ -173,12 +167,19 @@ function App({ user }) {
             <Input placeholder="Nombre del cliente" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} />
             <Input placeholder="Teléfono del cliente" value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} />
             <Divider orientation="left">Ubicación</Divider>
-            <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                width: "100%",
+              }}
+            >
               {zonesOptions.map((zone) => (
                 <Button
                   key={zone.value}
                   style={{
-                    flex: "1 1 calc(50% - 12px)",
+                    flex: "1 1 calc(25% - 12px)",
                     minWidth: 120,
                     height: 80,
                     backgroundColor: selectedZone == zone.value ? getCategoryColor("BEBIDAS") : getCategoryColor("HAMBURGUESAS"),

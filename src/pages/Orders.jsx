@@ -8,6 +8,7 @@ import getCategoryColor from "../utils/getColorsByCategories";
 import TextArea from "antd/es/input/TextArea";
 import _ from "lodash";
 import Ticket from "../components/Ticket";
+import { zonesOptions } from "../utils/zonesOptions";
 
 function Orders({ user }) {
   const { data: orders, updateDocument, refetch } = useFirestoreCRUD("orders", false);
@@ -91,20 +92,13 @@ function Orders({ user }) {
     refetch({ status: "open" })
       .then((res) => {
         const data = _.orderBy(res, "date", "desc");
-        setDisplayData(data)
+        setDisplayData(data);
       })
       .catch((err) => {
         console.log(err);
         setDisplayData([]);
       });
   }, []);
-
-  const zonesOptions = [
-    { label: "Zona A", value: "ZONEA" },
-    { label: "Zona B", value: "ZONEB" },
-    { label: "Zona C", value: "ZONEC" },
-    { label: "Terraza", value: "TERRAZA" },
-  ];
 
   const handleProductQtyChange = (index, delta) => {
     const newProducts = [...editingOrder.products];
@@ -237,12 +231,19 @@ function Orders({ user }) {
 
           <Divider orientation="left">Ubicación</Divider>
 
-          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+         <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                width: "100%",
+              }}
+            >
             {zonesOptions.map((zone) => (
               <Button
                 key={zone.value}
                 style={{
-                  flex: "1 1 calc(50% - 12px)",
+                  flex: "1 1 calc(25% - 12px)",
                   minWidth: 120,
                   height: 80,
                   backgroundColor: editingOrder?.location == zone.value ? getCategoryColor("BEBIDAS") : getCategoryColor("HAMBURGUESAS"),
@@ -431,13 +432,16 @@ function Orders({ user }) {
               itemLayout="vertical"
               dataSource={displayData}
               renderItem={(item) => {
+                debugger;
                 if ((item.seller && item.seller == user) || user == "CAJA" || !item.seller) {
                   return (
                     <List.Item key={item.id}>
                       <List.Item.Meta title={item.name} description={`Total de la orden: $${item.total}`} />
                       <List.Item.Meta description={`CI: ${item.dni || ""}`} />
+                      <List.Item.Meta description={`Teléfono: ${item.phone || ""}`} />
+                      <List.Item.Meta description={`Fecha: ${moment(item.date).format("DD/MM/YYYY HH:mm") || ""}`} />
                       {item.notes && <List.Item.Meta title={"Nota"} description={item.notes} />}
-                      {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label}</div>}
+                      {item.location && <div>Zona: {zonesOptions.find((z) => z.value === item.location)?.label || item.location}</div>}
                       <Divider style={{ margin: "8px 0" }} />
                       {item.products.map((product, idx) => (
                         <div key={idx} style={{ marginBottom: 4 }}>
