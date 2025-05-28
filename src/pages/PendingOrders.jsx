@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Table, Typography, Tag, Card, Button, Modal, message, Input, Divider } from "antd";
 import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import moment from "moment";
+import _ from "lodash"
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -109,14 +110,25 @@ const PendingOrders = () => {
   ];
 
   // Agrupar órdenes por día
-  const groupedByDay = pendingOrders
-    .filter((order) => order.name?.toLowerCase().includes(searchText.toLowerCase()))
-    .reduce((acc, order) => {
-      const day = moment(order.date).format("YYYY-MM-DD");
-      if (!acc[day]) acc[day] = [];
-      acc[day].push({ ...order, key: order.id });
-      return acc;
-    }, {});
+  const groupedByDay = _.fromPairs(
+  _.orderBy(
+    Object.entries(
+      pendingOrders
+        .filter((order) =>
+          order.name?.toLowerCase().includes(searchText.toLowerCase())
+        )
+        .reduce((acc, order) => {
+          const day = moment(order.date).format("YYYY-MM-DD");
+          if (!acc[day]) acc[day] = [];
+          acc[day].push({ ...order, key: order.id });
+          return acc;
+        }, {})
+    ),
+    // Ordenar por fecha (clave del objeto)
+    ([day]) => day,
+    "desc"
+  )
+);
 
   return (
     <Card>

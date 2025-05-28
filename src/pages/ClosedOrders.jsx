@@ -3,6 +3,7 @@ import { useFirestoreCRUD } from "../hooks/useFirestoreCrud";
 import { List, Divider, Collapse, DatePicker, Space } from "antd";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import _ from "lodash"
 
 const { Panel } = Collapse;
 const { RangePicker } = DatePicker;
@@ -26,6 +27,8 @@ function ClosedOrders({ user }) {
           end: moment(dates[1].toDate()).format(),
         },
       });
+      const newData = _.orderBy(orders, "date", "desc")
+      setDisplayData(newData)
     } else {
       refetch({ status: "closed" });
     }
@@ -40,7 +43,7 @@ function ClosedOrders({ user }) {
 
       <List
         itemLayout="vertical"
-        dataSource={orders}
+        dataSource={displayData}
         renderItem={(item) => (
           <List.Item key={item.id}>
             <List.Item.Meta
@@ -62,7 +65,7 @@ function ClosedOrders({ user }) {
                 ))}
               </Panel>
               <Panel header="Metodos de pago" key="2">
-                {item.payments.map((payment, idx) => (
+                {item?.payments?.map((payment, idx) => (
                   <div key={idx} style={{ marginBottom: 4 }}>
                     <strong>{payment.method}:</strong> ${payment.amount}
                   </div>

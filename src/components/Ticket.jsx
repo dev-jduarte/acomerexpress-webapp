@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { Button } from "antd";
 
-const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes }) => {
+const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes, date }) => {
 
   const printRef = useRef();
 
@@ -98,6 +98,9 @@ const ComandaTicket = ({ cliente, pedido = [], total, mesonero, zona, notes }) =
         </div>
         <div className="line">
           <strong>Zona:</strong> {zona}
+        </div>
+        <div className="line">
+          <strong>Fecha:</strong> {date}
         </div>
       </div>
 

@@ -432,7 +432,6 @@ function Orders({ user }) {
               itemLayout="vertical"
               dataSource={displayData}
               renderItem={(item) => {
-                debugger;
                 if ((item.seller && item.seller == user) || user == "CAJA" || !item.seller) {
                   return (
                     <List.Item key={item.id}>
@@ -480,6 +479,7 @@ function Orders({ user }) {
                             mesonero={item.seller}
                             zona={item.location}
                             notes={item.notes}
+                            date={item.date ? moment(item.date).format("DD/MM/YYYY HH:mm") : "N/A"}
                           />
                         )}
                       </div>
